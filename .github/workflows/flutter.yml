@@ -38,22 +38,6 @@ jobs:
       - run: flutter test
       - run: flutter build apk --debug --flavor dev --dart-define=API_BASE_URL=https://api.example.com --dart-define=DEV_AUTH_ENABLED=true
 
-  ios-simulator-verify:
-    runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: apps/mobile_flutter
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.44.7'
-          channel: stable
-          cache: true
-      - run: flutter pub get
-      - run: flutter analyze
-      - run: flutter build ios --simulator --no-codesign --dart-define=API_BASE_URL=https://api.example.com --dart-define=DEV_AUTH_ENABLED=true
-
   android-emulator-integration:
     runs-on: ubuntu-latest
     defaults:

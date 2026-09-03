@@ -1,24 +1,24 @@
 # AgriCare AI
 
-Ứng dụng Flutter tư vấn chăm sóc cây trồng và vật nuôi cho nông hộ Việt Nam.
+Ứng dụng Android tư vấn chăm sóc cây trồng và vật nuôi cho nông hộ Việt Nam.
 
-Đây là MVP local/demo. Dữ liệu knowledge hiện là fixture, API dùng dev auth khi chạy local, và chưa phải bản production.
+Đây là MVP local/demo: dữ liệu kiến thức là fixture, API dùng dev auth khi
+chạy local và chưa phải bản production.
 
 ## Stack
 
-- Mobile: Flutter 3.44.7/Dart 3.12.2 tại `apps/mobile_flutter`
+- Mobile Android: Flutter 3.44.7 / Dart 3.12.2 tại `apps/mobile_flutter`
 - API: FastAPI, Python 3.12, Pydantic Settings, SQLAlchemy
-- Database local mặc định: SQLite
+- Database local: SQLite
 - Database production dự kiến: Supabase PostgreSQL
 
 ## Yêu cầu
 
 - Flutter 3.44.7 và Dart 3.12.2
 - Python 3.12+
-- Android Studio + Android SDK nếu chạy Android local
-- macOS + Xcode nếu chạy iOS local
+- Android Studio và Android SDK
 
-## 1. Chạy API local
+## Chạy API local
 
 ```powershell
 Copy-Item .env.example .env
@@ -30,7 +30,7 @@ python -m uvicorn services.api.app.main:app --reload
 
 Kiểm tra: `Invoke-WebRequest http://127.0.0.1:8000/health`.
 
-## 2. Chạy Flutter
+## Chạy Android app
 
 ```powershell
 cd apps/mobile_flutter
@@ -38,15 +38,16 @@ flutter pub get
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:8000 --dart-define=DEV_AUTH_ENABLED=true
 ```
 
+`10.0.2.2` là địa chỉ máy host từ Android emulator. Với điện thoại thật, thay
+bằng địa chỉ IP LAN của máy chạy API.
+
 Build APK preview:
 
 ```powershell
 .\tool\build_flutter.ps1 -Flavor preview -Mode debug -ApiBaseUrl https://api.example.com
 ```
 
-Build iOS local cần macOS/Xcode. Production build cần signing secrets; xem [Flutter release runbook](docs/flutter-release-runbook.md).
-
-## 3. Kiểm tra
+## Kiểm tra
 
 ```powershell
 cd apps/mobile_flutter
@@ -63,7 +64,3 @@ python -m pytest services/api/tests -q
 - [API contract](docs/api-contract.md)
 - [Architecture](docs/architecture.md)
 - [Design system](design-system/agricare-ai/MASTER.md)
-- [Flutter migration checklist](docs/flutter-migration-checklist.md)
-- [Flutter release runbook](docs/flutter-release-runbook.md)
-- [Flutter release readiness](docs/flutter-release-readiness.md)
-- [Flutter accessibility audit](docs/flutter-accessibility-audit.md)
