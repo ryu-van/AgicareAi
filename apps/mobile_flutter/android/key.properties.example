@@ -1,0 +1,5 @@
+# Copy to android/key.properties locally. Never commit the real file.
+storePassword=<keystore-password>
+keyPassword=<key-password>
+keyAlias=<key-alias>
+storeFile=<absolute-path-to-keystore>

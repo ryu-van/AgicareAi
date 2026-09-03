@@ -1,0 +1,7 @@
+{
+  "name": "agricare-ai",
+  "private": true,
+  "scripts": {
+    "api": "python -m uvicorn services.api.app.main:app --reload"
+  }
+}

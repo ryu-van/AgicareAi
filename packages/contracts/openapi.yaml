@@ -1,0 +1,378 @@
+openapi: 3.1.0
+info:
+  title: AgriCare AI API
+  version: 0.1.0
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+  /ready:
+    get:
+      operationId: readinessCheck
+      responses:
+        '200':
+          description: Service is ready to accept requests
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+  /v1/domains:
+    get:
+      operationId: listDomains
+      responses:
+        '200':
+          description: Supported domains
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Domain' }
+  /v1/me:
+    get:
+      operationId: getMyProfile
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Current user profile
+          content: { application/json: { schema: { $ref: '#/components/schemas/Profile' } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+    patch:
+      operationId: updateMyProfile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/UpdateProfileRequest' } } }
+      responses:
+        '200':
+          description: Updated profile
+          content: { application/json: { schema: { $ref: '#/components/schemas/Profile' } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /v1/me/consents:
+    post:
+      operationId: createMyConsent
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/CreateConsentRequest' } } }
+      responses:
+        '201':
+          description: Consent recorded
+          content: { application/json: { schema: { $ref: '#/components/schemas/Consent' } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /v1/subjects:
+    get:
+      operationId: listSubjects
+      parameters:
+        - name: domain
+          in: query
+          schema: { type: string, enum: [plant, animal] }
+      responses:
+        '200':
+          description: Published subjects
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Subject' } }
+  /v1/knowledge/articles:
+    get:
+      operationId: listKnowledgeArticles
+      parameters:
+        - { name: domain, in: query, schema: { type: string, enum: [plant, animal] } }
+        - { name: subject_id, in: query, schema: { type: string, maxLength: 64 } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: Published knowledge articles
+          content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeArticleList' } } }
+  /v1/knowledge/articles/{article_id}:
+    get:
+      operationId: getKnowledgeArticle
+      parameters:
+        - name: article_id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Published article detail
+          content: { application/json: { schema: { $ref: '#/components/schemas/KnowledgeArticle' } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/chat/sessions:
+    post:
+      operationId: createChatSession
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateChatSessionRequest' }
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatSession' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /v1/chat/sessions/{session_id}/messages:
+    post:
+      operationId: sendChatMessage
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { $ref: '#/components/parameters/SessionId' }
+        - { $ref: '#/components/parameters/IdempotencyKey' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendChatMessageRequest' }
+      responses:
+        '202':
+          description: Message accepted/completed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ChatMessage' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+  /v1/journal/entries:
+    post:
+      operationId: createJournalEntry
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateJournalEntryRequest' }
+      responses:
+        '201':
+          description: Journal entry created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JournalEntry' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+  /v1/sync/batch:
+    post:
+      operationId: syncBatch
+      security: [{ bearerAuth: [] }]
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SyncBatchRequest' }
+      responses:
+        '200':
+          description: Per-event results
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncBatchResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: { type: string, minLength: 16, maxLength: 128 }
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema: { type: string }
+  responses:
+    Unauthenticated:
+      description: Missing or expired token
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    NotFound:
+      description: Resource not found or not owned
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    ValidationError:
+      description: Validation failed
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+    RateLimited:
+      description: Rate limit exceeded
+      headers: { Retry-After: { schema: { type: integer } } }
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorResponse' } } }
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, environment]
+      properties:
+        status: { type: string, enum: [ok] }
+        environment: { type: string }
+    Domain:
+      type: object
+      required: [id, label]
+      properties:
+        id: { type: string, enum: [plant, animal] }
+        label: { type: string }
+    Profile:
+      type: object
+      required: [id, locale]
+      properties:
+        id: { type: string, format: uuid }
+        display_name: { type: [string, 'null'] }
+        locale: { type: string }
+        active_domain: { type: [string, 'null'], enum: [plant, animal, null] }
+        region_code: { type: [string, 'null'] }
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name: { type: [string, 'null'], maxLength: 120 }
+        locale: { type: [string, 'null'], maxLength: 16 }
+        active_domain: { type: [string, 'null'], enum: [plant, animal, null] }
+        region_code: { type: [string, 'null'], maxLength: 32 }
+    CreateConsentRequest:
+      type: object
+      required: [consent_type, version]
+      properties:
+        consent_type: { type: string, enum: [privacy, ai_disclaimer, notifications] }
+        version: { type: string, minLength: 1, maxLength: 32 }
+    Consent:
+      type: object
+      required: [id, consent_type, version, accepted_at]
+      properties:
+        id: { type: string, format: uuid }
+        consent_type: { type: string }
+        version: { type: string }
+        accepted_at: { type: string, format: date-time }
+    Subject:
+      type: object
+      required: [id, domain, name]
+      properties:
+        id: { type: string }
+        domain: { type: string, enum: [plant, animal] }
+        name: { type: string }
+    KnowledgeArticle:
+      type: object
+      required: [id, domain, subject_id, title, content, status]
+      properties:
+        id: { type: string, format: uuid }
+        domain: { type: string, enum: [plant, animal] }
+        subject_id: { type: string }
+        title: { type: string }
+        summary: { type: [string, 'null'] }
+        content: { type: string }
+        topic: { type: [string, 'null'] }
+        source_name: { type: [string, 'null'] }
+        status: { type: string, enum: [published] }
+        published_at: { type: [string, 'null'], format: date-time }
+    KnowledgeArticleList:
+      type: object
+      required: [items]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/KnowledgeArticle' } }
+        next_cursor: { type: [string, 'null'] }
+    CreateChatSessionRequest:
+      type: object
+      required: [domain]
+      properties:
+        domain: { type: string, enum: [plant, animal] }
+        subject_id: { type: [string, 'null'], maxLength: 64 }
+        title: { type: [string, 'null'], maxLength: 120 }
+    ChatSession:
+      type: object
+      required: [id, domain, created_at]
+      properties:
+        id: { type: string }
+        domain: { type: string, enum: [plant, animal] }
+        subject_id: { type: [string, 'null'] }
+        title: { type: [string, 'null'] }
+        created_at: { type: string, format: date-time }
+    SendChatMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content: { type: string, minLength: 1, maxLength: 5000 }
+        context: { type: object, additionalProperties: true }
+    ChatMessage:
+      type: object
+      required: [message_id, status, role]
+      properties:
+        message_id: { type: string }
+        status: { type: string, enum: [queued, processing, completed, failed, safety_blocked] }
+        role: { type: string, enum: [user, assistant] }
+        answer: { type: [string, 'null'] }
+        safety_level: { type: string, enum: [normal, caution, urgent] }
+        needs_expert: { type: boolean }
+        citations: { type: array, items: { type: object } }
+    CreateJournalEntryRequest:
+      type: object
+      required: [subject_id, entry_type, observed_at, title]
+      properties:
+        subject_id: { type: string, maxLength: 64 }
+        entry_type: { type: string, enum: [observation, treatment, harvest, vaccination, feeding] }
+        observed_at: { type: string, format: date-time }
+        timezone: { type: string, maxLength: 64 }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        notes: { type: [string, 'null'], maxLength: 5000 }
+        client_event_id: { type: string, maxLength: 128 }
+    JournalEntry:
+      allOf:
+        - { $ref: '#/components/schemas/CreateJournalEntryRequest' }
+        - type: object
+          required: [id, created_at]
+          properties:
+            id: { type: string }
+            created_at: { type: string, format: date-time }
+    SyncBatchRequest:
+      type: object
+      required: [events]
+      properties:
+        events:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            type: object
+            required: [event_id, entity, operation, payload]
+            properties:
+              event_id: { type: string, maxLength: 128 }
+              entity: { type: string, enum: [journal_entry, reminder] }
+              operation: { type: string, enum: [upsert, delete] }
+              payload: { type: object, additionalProperties: true }
+    SyncBatchResponse:
+      type: object
+      required: [results]
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            required: [event_id, status]
+            properties:
+              event_id: { type: string }
+              status: { type: string, enum: [applied, duplicate, conflict, rejected] }
+              entity_id: { type: [string, 'null'] }
+        server_cursor: { type: [string, 'null'] }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            request_id: { type: string }
+            fields: { type: array, items: { type: object } }
