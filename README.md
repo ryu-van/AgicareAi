@@ -63,4 +63,5 @@ python -m pytest services/api/tests -q
 - [Features](docs/features.md)
 - [API contract](docs/api-contract.md)
 - [Architecture](docs/architecture.md)
+- [Project structure](docs/project-structure.md)
 - [Design system](design-system/agricare-ai/MASTER.md)

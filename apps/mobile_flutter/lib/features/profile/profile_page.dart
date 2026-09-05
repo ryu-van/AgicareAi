@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../data/api_client.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/app_components.dart';
+import '../../core/network/api_client.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_components.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.apiClient});

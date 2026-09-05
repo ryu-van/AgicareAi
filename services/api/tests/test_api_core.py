@@ -88,6 +88,7 @@ def test_dev_identity_auto_provisions_profile_and_consent(client, monkeypatch):
 
     assert profile.status_code == 200
     assert profile.json()["id"] == test_user.user_id
+    assert "active_domain" not in profile.json()
     assert updated.status_code == 200
     assert updated.json()["display_name"] == "Nông hộ demo"
     assert consent.status_code == 201
@@ -144,11 +145,14 @@ def test_knowledge_filters_published_articles(client):
     test_client, _, _ = client
 
     subjects = test_client.get("/v1/subjects", params={"domain": "animal"})
+    all_articles = test_client.get("/v1/knowledge/articles")
     articles = test_client.get("/v1/knowledge/articles", params={"q": "gà bỏ ăn", "domain": "animal"})
     detail = test_client.get("/v1/knowledge/articles/10000000-0000-4000-8000-000000000001")
 
     assert subjects.status_code == 200
     assert subjects.json()[0]["id"] == "chicken"
+    assert all_articles.status_code == 200
+    assert all_articles.json()["items"][0]["domain"] == "animal"
     assert articles.status_code == 200
     assert articles.json()["items"][0]["source_name"] == "AgriGuard synthetic fixture"
     assert detail.status_code == 200
@@ -301,3 +305,24 @@ def test_chat_message_returns_grounded_citation_for_matching_knowledge(client):
     assert len(body["citations"]) == 1
     assert body["citations"][0]["article_id"] == "10000000-0000-4000-8000-000000000001"
     assert "không phải chẩn đoán xác định" in body["answer"]
+
+
+def test_farm_diagnosis_and_reminders_endpoints(client):
+    test_client, _, _ = client
+
+    farms = test_client.get("/v1/farm/summary")
+    assert farms.status_code == 200
+    assert len(farms.json()) >= 1
+    assert farms.json()[0]["name"] == "Trang trại AgriCare Demo"
+
+    diagnosis = test_client.post(
+        "/v1/diagnosis/analyze",
+        json={"symptoms": "Lá lúa có đốm nâu và héo vàng", "domain": "plant"},
+    )
+    assert diagnosis.status_code == 200
+    assert "disease_name" in diagnosis.json()
+
+    reminders = test_client.get("/v1/reminders")
+    assert reminders.status_code == 200
+    assert len(reminders.json()) >= 1
+

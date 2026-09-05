@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agricare_ai_mobile/widgets/app_components.dart';
+import 'package:agricare_ai_mobile/shared/widgets/app_components.dart';
 
 Widget _host(Widget child) => MaterialApp(
   theme: ThemeData(useMaterial3: true),

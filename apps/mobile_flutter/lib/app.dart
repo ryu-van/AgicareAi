@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
-import 'data/api_client.dart';
+import 'core/network/api_client.dart';
 import 'features/chat/chat_page.dart';
+import 'features/diagnosis/diagnosis_page.dart';
+import 'features/farm/farm_page.dart';
 import 'features/home/home_page.dart';
+import 'features/journal/journal_page.dart';
 import 'features/knowledge/knowledge_page.dart';
 import 'features/profile/profile_page.dart';
-import 'theme/app_theme.dart';
-import 'widgets/app_components.dart';
-import 'widgets/domain_picker.dart';
+import 'features/reminders/reminders_page.dart';
+import 'features/sync/sync_page.dart';
+import 'core/theme/app_theme.dart';
+import 'shared/widgets/app_components.dart';
+import 'shared/widgets/domain_picker.dart';
 
 class AgriCareApp extends StatelessWidget {
   AgriCareApp({super.key, ApiClient? apiClient, this.initialRoute})
@@ -28,6 +33,11 @@ class AgriCareApp extends StatelessWidget {
       initialRoute: hasValidInitialRoute ? normalizedInitialRoute : null,
       routes: {
         '/chat': (_) => ChatPage(apiClient: apiClient, domain: Domain.plant),
+        '/farm': (_) => FarmPage(apiClient: apiClient),
+        '/diagnosis': (_) => DiagnosisPage(apiClient: apiClient),
+        '/journal': (_) => JournalPage(apiClient: apiClient),
+        '/reminders': (_) => RemindersPage(apiClient: apiClient),
+        '/sync': (_) => SyncPage(apiClient: apiClient),
       },
       onGenerateRoute: (settings) {
         final route = _normalizeRoute(settings.name);
@@ -36,6 +46,21 @@ class AgriCareApp extends StatelessWidget {
             builder: (_) =>
                 ChatPage(apiClient: apiClient, domain: Domain.plant),
           );
+        }
+        if (route == '/farm') {
+          return MaterialPageRoute(builder: (_) => FarmPage(apiClient: apiClient));
+        }
+        if (route == '/diagnosis') {
+          return MaterialPageRoute(builder: (_) => DiagnosisPage(apiClient: apiClient));
+        }
+        if (route == '/journal') {
+          return MaterialPageRoute(builder: (_) => JournalPage(apiClient: apiClient));
+        }
+        if (route == '/reminders') {
+          return MaterialPageRoute(builder: (_) => RemindersPage(apiClient: apiClient));
+        }
+        if (route == '/sync') {
+          return MaterialPageRoute(builder: (_) => SyncPage(apiClient: apiClient));
         }
         final segments = Uri.tryParse(route)?.pathSegments ?? const <String>[];
         if (segments.length == 2 && segments.first == 'knowledge') {
@@ -46,6 +71,7 @@ class AgriCareApp extends StatelessWidget {
               articleId: articleId,
               preview: KnowledgeArticle(
                 id: articleId,
+                domain: Domain.plant,
                 title: 'Kiến thức AgriCare',
               ),
             ),
@@ -71,6 +97,16 @@ String _normalizeRoute(String? name) {
         ? '/chat'
         : uri.host == 'knowledge'
         ? '/knowledge$path'
+        : uri.host == 'farm'
+        ? '/farm'
+        : uri.host == 'diagnosis'
+        ? '/diagnosis'
+        : uri.host == 'journal'
+        ? '/journal'
+        : uri.host == 'reminders'
+        ? '/reminders'
+        : uri.host == 'sync'
+        ? '/sync'
         : path.isEmpty
         ? '/'
         : path;
@@ -79,7 +115,9 @@ String _normalizeRoute(String? name) {
 }
 
 bool _isSupportedRoute(String route) {
-  if (route == '/chat') return true;
+  if (['/chat', '/farm', '/diagnosis', '/journal', '/reminders', '/sync'].contains(route)) {
+    return true;
+  }
   final segments = Uri.tryParse(route)?.pathSegments ?? const <String>[];
   return segments.length == 2 && segments.first == 'knowledge';
 }

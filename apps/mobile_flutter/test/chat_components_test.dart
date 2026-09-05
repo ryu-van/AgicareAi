@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agricare_ai_mobile/data/api_client.dart';
-import 'package:agricare_ai_mobile/widgets/chat_components.dart';
+import 'package:agricare_ai_mobile/core/network/api_client.dart';
+import 'package:agricare_ai_mobile/shared/widgets/chat_components.dart';
 
 void main() {
   testWidgets('chat bubble exposes citations and urgent safety message', (

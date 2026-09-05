@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:agricare_ai_mobile/app.dart';
-import 'package:agricare_ai_mobile/data/api_client.dart';
+import 'package:agricare_ai_mobile/core/network/api_client.dart';
 import 'package:agricare_ai_mobile/features/profile/profile_page.dart';
 
 class _FlowClient extends http.BaseClient {

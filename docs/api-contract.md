@@ -51,6 +51,15 @@ Codes: `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `CONFLIC
 | GET | `/v1/escalations/{id}` | User | Escalation status |
 | POST | `/v1/diagnoses` | User | Phase 2 only |
 
+### Knowledge feed context
+
+`GET /v1/knowledge/articles` trả về feed chung khi không truyền `domain`.
+Mỗi article luôn có trường `domain` để client gắn nhãn hoặc dùng bộ lọc.
+Tham số `domain=plant|animal` chỉ dùng khi người dùng chủ động lọc nội dung.
+
+Profile không còn trả về hoặc cập nhật `active_domain`. Ngữ cảnh chỉ được chọn
+khi tạo một chat session qua `POST /v1/chat/sessions`.
+
 ## Core request/response examples
 
 ### Create chat session

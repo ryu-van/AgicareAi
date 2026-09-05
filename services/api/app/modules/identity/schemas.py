@@ -10,14 +10,12 @@ class ProfileResponse(BaseModel):
     id: str
     display_name: str | None
     locale: str
-    active_domain: Literal["plant", "animal"] | None
     region_code: str | None
 
 
 class UpdateProfileRequest(BaseModel):
     display_name: str | None = Field(default=None, max_length=120)
     locale: str | None = Field(default=None, max_length=16)
-    active_domain: Literal["plant", "animal"] | None = None
     region_code: str | None = Field(default=None, max_length=32)
 
 

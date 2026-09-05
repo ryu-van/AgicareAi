@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../data/api_client.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/app_components.dart';
+import '../../core/network/api_client.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_components.dart';
 
 class ArticleDetailPage extends StatefulWidget {
   const ArticleDetailPage({
@@ -138,27 +138,17 @@ class _KnowledgePageState extends State<KnowledgePage> {
       _error = null;
     });
     try {
-      final domains = _filter == null ? Domain.values : [_filter!];
-      final results = await Future.wait(
-        domains.map(
-          (domain) => widget.apiClient.getArticles(
-            domain,
-            query: _searchController.text,
-          ),
-        ),
+      final results = await widget.apiClient.getArticles(
+        domain: _filter,
+        query: _searchController.text,
       );
       if (!mounted) return;
-      final seenArticleIds = <String>{};
-      final articles = <_TaggedArticle>[];
-      for (var index = 0; index < domains.length; index++) {
-        for (final article in results[index]) {
-          if (seenArticleIds.add(article.id)) {
-            articles.add(
-              _TaggedArticle(article: article, domain: domains[index]),
-            );
-          }
-        }
-      }
+      final articles = results
+          .map(
+            (article) =>
+                _TaggedArticle(article: article, domain: article.domain),
+          )
+          .toList();
       setState(() => _articles = articles);
     } catch (_) {
       if (mounted) setState(() => _error = 'Không thể tải kiến thức lúc này.');

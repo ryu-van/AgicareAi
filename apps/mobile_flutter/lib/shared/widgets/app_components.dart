@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../../core/theme/app_theme.dart';
 
 enum StatusTone { info, warning, success, neutral, danger }
 
@@ -128,40 +128,57 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AppCard(
-    padding: const EdgeInsets.all(AppSpacing.lg),
+    padding: const EdgeInsets.all(AppSpacing.sm),
     onTap: onTap,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight.withValues(alpha: 0.5),
-            shape: BoxShape.circle,
-            boxShadow: AppShadows.softFloating(
-              shadowColor: AppColors.primary,
-              opacity: 0.15,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+                boxShadow: AppShadows.softFloating(
+                  shadowColor: AppColors.primary,
+                  opacity: 0.15,
+                ),
+              ),
+              child: Icon(icon, size: 20, color: AppColors.primary),
             ),
-          ),
-          child: Icon(icon, size: 28, color: AppColors.primary),
+            if (status != null)
+              Flexible(
+                child: StatusChip(label: status!, tone: StatusTone.neutral),
+              ),
+          ],
         ),
-        const SizedBox(height: AppSpacing.lg),
-        Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+        const SizedBox(height: 4),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppColors.mutedForeground,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: AppSpacing.xs),
-        Text(
-          subtitle,
-          style: const TextStyle(
-            fontSize: 12,
-            color: AppColors.mutedForeground,
-          ),
-        ),
-        if (status != null) ...[
-          const SizedBox(height: AppSpacing.sm),
-          StatusChip(label: status!, tone: StatusTone.neutral),
-        ],
       ],
     ),
   );
@@ -210,7 +227,7 @@ class StatusChip extends StatelessWidget {
     return Semantics(
       label: label,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: background,
           borderRadius: BorderRadius.circular(AppRadii.pill),
@@ -230,14 +247,18 @@ class StatusChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: foreground),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                color: foreground,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
+            Icon(icon, size: 12, color: foreground),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                ),
               ),
             ),
           ],

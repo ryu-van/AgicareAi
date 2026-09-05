@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 
-import '../../data/api_client.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/chat_components.dart';
+import '../../core/network/api_client.dart';
+import '../../core/repositories/chat_repository.dart';
+import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/chat_components.dart';
 
 class ChatPage extends StatefulWidget {
-  const ChatPage({super.key, required this.apiClient, required this.domain});
+  ChatPage({
+    super.key,
+    required this.domain,
+    ApiClient? apiClient,
+    ChatRepository? repository,
+  })  : apiClient = apiClient ?? ApiClient(),
+        repository = repository ?? ApiChatRepository(apiClient: apiClient ?? ApiClient());
+
   final ApiClient apiClient;
+  final ChatRepository repository;
   final Domain domain;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
 }
+
 
 class _ChatPageState extends State<ChatPage> {
   final _controller = TextEditingController();
@@ -56,8 +66,8 @@ class _ChatPageState extends State<ChatPage> {
     });
     _scrollToLatest();
     try {
-      _sessionId ??= await widget.apiClient.createChatSession(widget.domain);
-      final reply = await widget.apiClient.sendChatMessage(_sessionId!, text);
+      _sessionId ??= await widget.repository.createSession(widget.domain);
+      final reply = await widget.repository.sendMessage(_sessionId!, text);
       if (mounted) {
         setState(() => _messages.add(reply));
         _scrollToLatest();

@@ -232,14 +232,12 @@ components:
         id: { type: string, format: uuid }
         display_name: { type: [string, 'null'] }
         locale: { type: string }
-        active_domain: { type: [string, 'null'], enum: [plant, animal, null] }
         region_code: { type: [string, 'null'] }
     UpdateProfileRequest:
       type: object
       properties:
         display_name: { type: [string, 'null'], maxLength: 120 }
         locale: { type: [string, 'null'], maxLength: 16 }
-        active_domain: { type: [string, 'null'], enum: [plant, animal, null] }
         region_code: { type: [string, 'null'], maxLength: 32 }
     CreateConsentRequest:
       type: object

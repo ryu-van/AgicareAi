@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
-import '../core/app_logger.dart';
+import '../app_logger.dart';
 
 enum Domain { plant, animal }
 
@@ -14,26 +14,25 @@ extension DomainLabel on Domain {
 }
 
 class Profile {
-  const Profile({this.displayName, this.activeDomain});
+  const Profile({this.displayName});
   final String? displayName;
-  final Domain? activeDomain;
 
-  factory Profile.fromJson(Map<String, dynamic> json) => Profile(
-    displayName: json['display_name'] as String?,
-    activeDomain: _domainFromJson(json['active_domain']),
-  );
+  factory Profile.fromJson(Map<String, dynamic> json) =>
+      Profile(displayName: json['display_name'] as String?);
 }
 
 class KnowledgeArticle {
   const KnowledgeArticle({
     required this.id,
     required this.title,
+    required this.domain,
     this.summary,
     this.content,
     this.sourceName,
   });
   final String id;
   final String title;
+  final Domain domain;
   final String? summary;
   final String? content;
   final String? sourceName;
@@ -41,6 +40,7 @@ class KnowledgeArticle {
   factory KnowledgeArticle.fromJson(Map<String, dynamic> json) =>
       KnowledgeArticle(
         id: json['id'] as String? ?? '',
+        domain: _domainFromJson(json['domain']) ?? Domain.plant,
         title: json['title'] as String? ?? 'Bài viết AgriCare',
         summary: json['summary'] as String?,
         content: json['content'] as String?,
@@ -124,32 +124,25 @@ class ApiClient {
   Future<Profile> getProfile() async =>
       Profile.fromJson(await _get('/v1/me') as Map<String, dynamic>);
 
-  Future<Profile> updateProfile(
-    String displayName, {
-    Domain? activeDomain,
-  }) async => Profile.fromJson(
-    await _patch('/v1/me', {
-      'display_name': displayName,
-      if (activeDomain != null) 'active_domain': activeDomain.value,
-    }),
-  );
+  Future<Profile> updateProfile(String displayName) async =>
+      Profile.fromJson(await _patch('/v1/me', {'display_name': displayName}));
 
   Future<bool> healthCheck() async {
     final body = await _get('/health') as Map<String, dynamic>;
     return body['status'] == 'ok' || body['status'] == 'healthy';
   }
 
-  Future<List<KnowledgeArticle>> getArticles(
-    Domain domain, {
+  Future<List<KnowledgeArticle>> getArticles({
+    Domain? domain,
     String? query,
   }) async {
-    final encodedQuery = query == null || query.trim().isEmpty
-        ? ''
-        : '&q=${Uri.encodeQueryComponent(query.trim())}';
+    final parameters = <String>['limit=20'];
+    if (domain != null) parameters.add('domain=${domain.value}');
+    if (query != null && query.trim().isNotEmpty) {
+      parameters.add('q=${Uri.encodeQueryComponent(query.trim())}');
+    }
     final body =
-        await _get(
-              '/v1/knowledge/articles?domain=${domain.value}&limit=3$encodedQuery',
-            )
+        await _get('/v1/knowledge/articles?${parameters.join('&')}')
             as Map<String, dynamic>;
     return ((body['items'] as List<dynamic>? ?? const []))
         .map((item) => KnowledgeArticle.fromJson(item as Map<String, dynamic>))

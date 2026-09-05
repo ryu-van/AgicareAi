@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agricare_ai_mobile/app.dart';
-import 'package:agricare_ai_mobile/widgets/app_components.dart';
+import 'package:agricare_ai_mobile/shared/widgets/app_components.dart';
 
 void main() {
   testWidgets('opens chat deep link', (tester) async {

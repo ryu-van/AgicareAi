@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../data/api_client.dart';
-import '../theme/app_theme.dart';
+import '../../core/network/api_client.dart';
+import '../../core/theme/app_theme.dart';
 
 Future<Domain?> showDomainPicker(BuildContext context) =>
     showModalBottomSheet<Domain>(

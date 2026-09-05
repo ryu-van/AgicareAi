@@ -4,10 +4,11 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:agricare_ai_mobile/data/api_client.dart';
+import 'package:agricare_ai_mobile/core/network/api_client.dart';
 
 class _FakeClient extends http.BaseClient {
   _FakeClient(this.handler);
+
   final Future<http.Response> Function(http.BaseRequest request) handler;
 
   @override
@@ -22,22 +23,53 @@ class _FakeClient extends http.BaseClient {
 }
 
 void main() {
-  test('maps profile and article models', () {
-    final profile = Profile.fromJson({
-      'display_name': 'Lan',
-      'active_domain': 'animal',
-    });
+  test('maps profile and article models without a global domain', () {
+    final profile = Profile.fromJson({'display_name': 'Lan'});
     final article = KnowledgeArticle.fromJson({
       'id': 'a1',
+      'domain': 'plant',
       'title': 'Chăm sóc lúa',
       'content': 'Nội dung',
       'source_name': 'AgriCare',
     });
+
     expect(profile.displayName, 'Lan');
-    expect(profile.activeDomain, Domain.animal);
+    expect(article.domain, Domain.plant);
     expect(article.content, 'Nội dung');
     expect(article.sourceName, 'AgriCare');
   });
+
+  test(
+    'loads the unfiltered knowledge feed with each article domain',
+    () async {
+      late http.BaseRequest request;
+      final client = ApiClient(
+        client: _FakeClient((incoming) async {
+          request = incoming;
+          return http.Response(
+            jsonEncode({
+              'items': [
+                {'id': 'p1', 'domain': 'plant', 'title': 'Lúa'},
+                {'id': 'a1', 'domain': 'animal', 'title': 'Gà'},
+              ],
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+        baseUrl: 'http://test',
+      );
+
+      final articles = await client.getArticles();
+
+      expect(request.url.queryParameters['domain'], isNull);
+      expect(articles.map((article) => article.domain), [
+        Domain.plant,
+        Domain.animal,
+      ]);
+      client.dispose();
+    },
+  );
 
   test('keeps compatible auth header and maps profile response', () async {
     late http.BaseRequest request;
@@ -45,7 +77,7 @@ void main() {
       client: _FakeClient((incoming) async {
         request = incoming;
         return http.Response(
-          jsonEncode({'display_name': 'Demo', 'active_domain': 'plant'}),
+          jsonEncode({'display_name': 'Demo'}),
           200,
           headers: {'content-type': 'application/json'},
         );

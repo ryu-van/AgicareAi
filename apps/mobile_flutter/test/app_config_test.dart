@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:agricare_ai_mobile/config/app_config.dart';
+import 'package:agricare_ai_mobile/core/config/app_config.dart';
 
 void main() {
   test('accepts HTTPS non-local production API URLs', () {
