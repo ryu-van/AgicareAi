@@ -14,8 +14,7 @@ phát hành theo từng đợt.
   journal, reminders và diagnosis.
 - **Data:** Supabase Auth + PostgreSQL + Storage + pgvector là mục tiêu
   production; local demo dùng SQLite/fixture.
-- **AI:** RAG có citation bắt buộc; vision adapter chỉ bật cho lớp đối tượng
-  đã được đánh giá thực địa.
+- **AI:** Multimodal RAG kết hợp Hybrid Search (pgvector + pg_trgm), trích xuất đặc trưng thị giác qua Gemini 1.5 Flash, cơ chế an toàn 3 tầng và trích dẫn nguồn bắt buộc (Chi tiết tại [ADR-003](adr/ADR-003-ai-rag-multimodal-architecture.md) và [Đặc tả kỹ thuật AI](ai-rag-technical-spec.md)).
 - **Local sync:** SQLite + outbox/event id trên Android; server upsert
   idempotent.
 
@@ -27,11 +26,16 @@ Android app (Flutter)
   ├─ Auth client ──────────────────> Supabase Auth
   └─ image upload ─────────────────> API -> Supabase Storage
 
-API
-  ├─ Chat/RAG -> knowledge sources -> pgvector/Postgres
-  ├─ Diagnosis adapter -> vision provider/model (phase 2)
-  ├─ Journal/Reminder -> Postgres
-  └─ Expert escalation -> directory/notification adapter (phase 2)
+API (FastAPI)
+  ├─ Chat/RAG Engine:
+  │    ├─ Safety Pre-Guardrail -> Phát hiện dịch bệnh khẩn cấp Nhóm A
+  │    ├─ Vision Adapter -> Gemini 1.5 Flash (Structured Symptoms JSON)
+  │    ├─ Hybrid Search -> PostgreSQL (pgvector Dense <=> + pg_trgm Sparse %)
+  │    ├─ Grounded Synthesis -> Gemini 1.5 Flash + Citation/Disclaimer
+  │    └─ Safety Post-Guardrail -> Kiểm tra hoạt chất cấm & Disclaimer
+  ├─ Knowledge/Articles -> PostgreSQL + pgvector
+  ├─ Journal/Reminder -> PostgreSQL
+  └─ Expert escalation -> directory/notification adapter
 ```
 
 ## Dependency direction

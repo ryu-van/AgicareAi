@@ -105,12 +105,13 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 - [ ] *Còn lại:* Lưu bài viết vào bookmark/offline cache trên máy.
 
 #### 🟡 F3: Trợ lý AI an toàn có trích dẫn (Safe Chatbot with Citations) — `Hoàn thành 85%`
+- [x] **Kiến trúc & Quyết định kỹ thuật:** Đã phê duyệt [ADR-003: Kiến trúc AI Multimodal RAG](adr/ADR-003-ai-rag-multimodal-architecture.md) và [Đặc tả Kỹ thuật AI & RAG](ai-rag-technical-spec.md) (Gemini 1.5 Flash + pgvector Hybrid Search + 3-tier Safety Guardrails).
 - [x] **Backend Logic:** Endpoint `/v1/chat/sessions`, `/v1/chat/sessions/{id}/messages`.
 - [x] **Cơ chế an toàn (Safety Gate):** Phân cấp độ an toàn `normal` / `caution` / `urgent` dựa trên từ khóa nguy cấp (dịch bệnh, chết hàng loạt, thuốc độc hại).
 - [x] **Trích dẫn nguồn:** Tự động tìm kiếm bài viết kiến thức liên quan và gắn `citations` vào câu trả lời.
 - [x] **Mobile UI:** Màn hình `ChatPage`, khung soạn thảo tin nhắn nhiều dòng, bong bóng chat hiển thị nguồn trích dẫn và nút "Cần chuyên gia".
 - [x] **Kiểm thử:** Test phân loại an toàn, test retry khi mạng chậm, test deep link mở chat session.
-- [ ] *Còn lại:* Đấu nối LLM Provider thực tế (OpenAI / Gemini / Claude) thông qua `AIProviderAdapter` (hiện đang dùng câu trả lời mẫu kết hợp RAG fixture).
+- [ ] *Còn lại:* Đấu nối LLM Provider thực tế (Gemini 1.5 Flash API) thông qua `AIProviderAdapter` và `RAGAdapter` (kết nối pgvector) theo đặc tả kỹ thuật.
 
 ---
 
@@ -143,10 +144,11 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 - [x] **Cờ cảnh báo:** Hệ thống chat tự động bật cờ `needs_expert: true` khi phát hiện triệu chứng nguy hiểm.
 - [ ] *Chưa có:* Endpoint tạo yêu cầu `/v1/escalations`, quản lý danh bạ chuyên gia/cán bộ khuyến nông địa phương.
 
-#### ⚪ F8: Chẩn đoán sâu bệnh qua ảnh (Image Diagnosis) — `Hoàn thành 30% (Prototype)`
+#### ⚪ F8: Chẩn đoán sâu bệnh qua ảnh (Image Diagnosis) — `Hoàn thành 35% (Prototype)`
 - [x] **API Stub:** Endpoint `/v1/diagnoses` trả về kết quả dự đoán thử nghiệm.
 - [x] **Mobile Prototype:** Màn hình `DiagnosisPage` cho phép chọn ảnh và xem giao diện phân tích bệnh mẫu.
-- [ ] *Chưa có:* Model thị giác máy tính (Vision Model), dataset ảnh bệnh cây trồng/vật nuôi Việt Nam đã qua kiểm định chuyên gia.
+- [x] **Đặc tả kiến trúc:** Lựa chọn pipeline Gemini 1.5 Flash Multimodal Vision Extraction trích xuất JSON triệu chứng kết hợp Hybrid RAG (xem [ai-rag-technical-spec.md](ai-rag-technical-spec.md)).
+- [ ] *Còn lại:* Nâng cấp `VisionAdapter` kết nối Gemini API; triển khai nén ảnh trên client Flutter trước khi gửi.
 
 ---
 

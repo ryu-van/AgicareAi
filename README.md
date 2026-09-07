@@ -77,6 +77,9 @@ python -m pytest services/api/tests -q
 
 - [Tiến trình dự án (Progress Tracker)](docs/project-progress.md)
 - [Quy chuẩn thương hiệu & Logo (Brand Guidelines)](docs/brand-guidelines.md)
+- [Kiến trúc & Tech stack (Architecture)](docs/architecture.md)
+- [ADR-003: Kiến trúc AI Multimodal RAG](docs/adr/ADR-003-ai-rag-multimodal-architecture.md)
+- [Đặc tả Kỹ thuật AI & Multimodal RAG](docs/ai-rag-technical-spec.md)
 - [Requirements](docs/requirements.md)
 - [Features](docs/features.md)
 - [API contract](docs/api-contract.md)
