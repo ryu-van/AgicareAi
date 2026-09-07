@@ -14,6 +14,8 @@ import 'core/theme/app_theme.dart';
 import 'shared/widgets/app_components.dart';
 import 'shared/widgets/domain_picker.dart';
 
+typedef AgriAnApp = AgriCareApp;
+
 class AgriCareApp extends StatelessWidget {
   AgriCareApp({super.key, ApiClient? apiClient, this.initialRoute})
     : apiClient = apiClient ?? ApiClient();
@@ -25,7 +27,7 @@ class AgriCareApp extends StatelessWidget {
     final normalizedInitialRoute = _normalizeRoute(initialRoute);
     final hasValidInitialRoute = _isSupportedRoute(normalizedInitialRoute);
     return MaterialApp(
-      title: 'AgriCare AI',
+      title: 'AgriAn',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
@@ -72,7 +74,7 @@ class AgriCareApp extends StatelessWidget {
               preview: KnowledgeArticle(
                 id: articleId,
                 domain: Domain.plant,
-                title: 'Kiến thức AgriCare',
+                title: 'Kiến thức AgriAn',
               ),
             ),
           );
@@ -147,13 +149,11 @@ class _HomeShellState extends State<_HomeShell> {
           ],
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: AppFloatingCenterNavShell(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: (index) =>
-              setState(() => _selectedIndex = index),
-          onCenterTap: _startChat,
-        ),
+      bottomNavigationBar: AppFloatingCenterNavShell(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) =>
+            setState(() => _selectedIndex = index),
+        onCenterTap: _startChat,
       ),
     );
   }

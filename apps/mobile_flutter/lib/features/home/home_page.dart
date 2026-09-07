@@ -75,12 +75,14 @@ class _HomePageState extends State<HomePage> {
         children: [
           Row(
             children: [
+              const AppBrandLogo(size: BrandLogoSize.medium),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'AgriCare AI',
+                      'AgriAn',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w900,
@@ -117,11 +119,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const SizedBox(height: 16),
-          AppPrimaryButton(
-            label: 'Hỏi chuyên gia về vấn đề của bạn',
-            icon: Icons.chat_bubble_outline_rounded,
-            onPressed: _startChat,
-          ),
+          _ConsultationHeroCard(onTap: _startChat),
           const SizedBox(height: 16),
           const _HeroCard(),
           const SizedBox(height: 24),
@@ -140,6 +138,9 @@ class _HomePageState extends State<HomePage> {
                 title: 'Chẩn đoán',
                 subtitle: 'Phân tích hình ảnh',
                 status: 'Sắp có',
+                iconColor: AppColors.primary,
+                iconBackgroundColor: AppColors.primaryLight,
+                statusTone: StatusTone.success,
                 onTap: _startChat,
               ),
               FeatureCard(
@@ -147,6 +148,9 @@ class _HomePageState extends State<HomePage> {
                 title: 'Hỏi AI',
                 subtitle: 'Nhận tư vấn nhanh',
                 status: 'Sắp có',
+                iconColor: AppColors.techBlue,
+                iconBackgroundColor: AppColors.techBlueLight,
+                statusTone: StatusTone.info,
                 onTap: _startChat,
               ),
               FeatureCard(
@@ -154,6 +158,9 @@ class _HomePageState extends State<HomePage> {
                 title: 'Sổ tay Nông nghiệp',
                 subtitle: 'Tra cứu dịch hại',
                 status: 'Khuyên dùng',
+                iconColor: AppColors.harvestGoldDark,
+                iconBackgroundColor: AppColors.harvestGoldLight,
+                statusTone: StatusTone.warning,
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => KnowledgePage(apiClient: widget.apiClient),
@@ -165,6 +172,9 @@ class _HomePageState extends State<HomePage> {
                 title: 'Dự báo Mùa vụ',
                 subtitle: 'Thời tiết & Cảnh báo',
                 status: 'Trực tuyến',
+                iconColor: AppColors.sunAmber,
+                iconBackgroundColor: AppColors.sunAmberLight,
+                statusTone: StatusTone.warning,
               ),
             ],
           ),
@@ -172,27 +182,44 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.infoSurface,
+              color: AppColors.harvestGoldLight,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.info.withValues(alpha: 0.15)),
+              border: Border.all(
+                color: AppColors.harvestGold.withValues(alpha: 0.35),
+              ),
             ),
             child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.lightbulb_outline_rounded,
-                  color: AppColors.info,
+                  Icons.lightbulb_rounded,
+                  color: AppColors.harvestGoldDark,
                   size: 24,
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    'Mẹo hôm nay\nTheo dõi đều đặn cây trồng và vật nuôi để phát hiện dấu hiệu bất thường sớm.',
-                    style: TextStyle(
-                      color: AppColors.info,
-                      height: 1.4,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Mẹo hôm nay',
+                        style: TextStyle(
+                          color: AppColors.harvestGoldDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Theo dõi đều đặn cây trồng và vật nuôi để phát hiện dấu hiệu bất thường sớm.',
+                        style: TextStyle(
+                          color: Color(0xFF6B4D00),
+                          height: 1.4,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -247,6 +274,120 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+class _ConsultationHeroCard extends StatelessWidget {
+  const _ConsultationHeroCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+    color: Colors.transparent,
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.white, Color(0xFFFEFDF7)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: AppColors.harvestGold.withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.harvestGold.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.harvestGoldLight,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.harvestGold.withValues(alpha: 0.25),
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.harvestGoldDark,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Hỏi chuyên gia về vấn đề của bạn',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.foreground,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Tư vấn kỹ thuật cây trồng & vật nuôi',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.mutedForeground,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: AppShadows.softFloating(
+                  shadowColor: AppColors.primary,
+                  opacity: 0.25,
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Hỏi ngay',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
 class _HeroCard extends StatelessWidget {
   const _HeroCard();
 
@@ -255,35 +396,78 @@ class _HeroCard extends StatelessWidget {
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       gradient: const LinearGradient(
-        colors: [Color(0xFFE8F5D6), Color(0xFFF5F7F0)],
+        colors: [Colors.white, Color(0xFFFAFBF7)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
       ),
       borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+      border: Border.all(color: const Color(0xFFE2E7DD), width: 1.2),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x08000000),
+          blurRadius: 12,
+          offset: Offset(0, 4),
+        ),
+      ],
     ),
-    child: const Row(
+    child: Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryLight,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      'Đang phát triển tốt',
+                      style: TextStyle(
+                        color: AppColors.primaryPressed,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
                 'Nông trại của bạn',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.primaryPressed,
+                  color: AppColors.foreground,
                 ),
               ),
-              SizedBox(height: 8),
-              Text(
+              const SizedBox(height: 4),
+              const Text(
                 'Theo dõi sức khỏe và nhận gợi ý chăm sóc mỗi ngày.',
-                style: TextStyle(color: AppColors.mutedForeground, height: 1.4),
+                style: TextStyle(
+                  color: AppColors.mutedForeground,
+                  height: 1.4,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
         ),
-        SizedBox(width: 12),
-        _FarmIcon(),
+        const SizedBox(width: 12),
+        const _FarmIcon(),
       ],
     ),
   );
@@ -294,22 +478,20 @@ class _FarmIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(12),
+    width: 54,
+    height: 54,
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: AppColors.harvestGoldLight,
       shape: BoxShape.circle,
-      boxShadow: [
-        BoxShadow(
-          color: AppColors.primary.withValues(alpha: 0.15),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
+      border: Border.all(
+        color: AppColors.harvestGold.withValues(alpha: 0.3),
+        width: 1.5,
+      ),
     ),
     child: const Icon(
       Icons.agriculture_rounded,
-      size: 40,
-      color: AppColors.primary,
+      color: AppColors.harvestGoldDark,
+      size: 30,
     ),
   );
 }

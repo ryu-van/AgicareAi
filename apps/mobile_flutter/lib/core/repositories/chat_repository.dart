@@ -1,5 +1,4 @@
 import '../network/api_client.dart';
-import '../../shared/widgets/chat_components.dart';
 
 abstract class ChatRepository {
   Future<String> createSession(Domain domain);

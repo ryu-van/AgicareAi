@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/network/api_client.dart';
 import '../../core/repositories/chat_repository.dart';
 import '../../core/theme/app_theme.dart';
+import '../../shared/widgets/app_components.dart';
 import '../../shared/widgets/chat_components.dart';
 
 class ChatPage extends StatefulWidget {
@@ -58,23 +59,24 @@ class _ChatPageState extends State<ChatPage> {
     final text = _controller.text.trim();
     if (text.isEmpty || _sending) return;
     _controller.clear();
-    _lastSentText = text;
     setState(() {
-      _messages.add(ChatMessage(text: text, isUser: true));
       _sending = true;
       _error = null;
+      _lastSentText = text;
+      _messages.add(ChatMessage(isUser: true, text: text));
     });
     _scrollToLatest();
+
     try {
-      _sessionId ??= await widget.repository.createSession(widget.domain);
-      final reply = await widget.repository.sendMessage(_sessionId!, text);
-      if (mounted) {
-        setState(() => _messages.add(reply));
-        _scrollToLatest();
-      }
+      final sessionId = _sessionId ?? await widget.repository.createSession(widget.domain);
+      _sessionId = sessionId;
+      final answer = await widget.repository.sendMessage(sessionId, text);
+      if (!mounted) return;
+      setState(() => _messages.add(answer));
+      _scrollToLatest();
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'Không thể gửi câu hỏi. Hãy thử lại.');
+        setState(() => _error = 'Không thể gửi câu hỏi lúc này. Hãy thử lại.');
       }
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -93,7 +95,16 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Hỏi AgriCare AI')),
+    appBar: AppBar(
+      title: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppBrandLogo(size: BrandLogoSize.small),
+          SizedBox(width: 8),
+          Text('Hỏi AgriAn AI'),
+        ],
+      ),
+    ),
     body: Column(
       children: [
         if (_sending) const LinearProgressIndicator(minHeight: 2),
@@ -185,6 +196,8 @@ class _EmptyChat extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const AppBrandLogo(size: BrandLogoSize.large),
+          const SizedBox(height: 16),
           const Text(
             'Hãy hỏi về cây trồng hoặc vật nuôi của bạn.',
             textAlign: TextAlign.center,

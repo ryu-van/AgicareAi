@@ -5,7 +5,7 @@
 
 version:
   revision: "84fc5cbb223bc12f83d65b647ff8a56caf779ffd"
-  channel: "stable"
+  channel: "[user-branch]"
 
 project_type: app
 
@@ -15,7 +15,7 @@ migration:
     - platform: root
       create_revision: 84fc5cbb223bc12f83d65b647ff8a56caf779ffd
       base_revision: 84fc5cbb223bc12f83d65b647ff8a56caf779ffd
-    - platform: android
+    - platform: web
       create_revision: 84fc5cbb223bc12f83d65b647ff8a56caf779ffd
       base_revision: 84fc5cbb223bc12f83d65b647ff8a56caf779ffd
 
@@ -27,3 +27,4 @@ migration:
   # Files that are not part of the templates will be ignored by default.
   unmanaged_files:
     - 'lib/main.dart'
+    - 'ios/Runner.xcodeproj/project.pbxproj'

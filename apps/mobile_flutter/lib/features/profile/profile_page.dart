@@ -104,7 +104,7 @@ class _ProfilePageState extends State<ProfilePage> {
       const SizedBox(height: 12),
       Center(
         child: Text(
-          _profile?.displayName ?? 'Người dùng AgriCare',
+          _profile?.displayName ?? 'Người dùng AgriAn',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
       ),
@@ -152,6 +152,40 @@ class _ProfilePageState extends State<ProfilePage> {
         onPressed: _saving ? null : _saveProfile,
         icon: _saving ? Icons.hourglass_top_rounded : Icons.save_outlined,
         loading: _saving,
+      ),
+      const SizedBox(height: 32),
+      Center(
+        child: Column(
+          children: [
+            const AppBrandLogo(size: BrandLogoSize.medium),
+            const SizedBox(height: 8),
+            const Text(
+              'AgriAn',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                color: AppColors.primaryPressed,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 2),
+            const Text(
+              'Vụ mùa an tâm, nông gia thịnh vượng',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.mutedForeground,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Phiên bản 0.1.0-dev',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.mutedForeground,
+              ),
+            ),
+          ],
+        ),
       ),
     ],
   );

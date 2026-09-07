@@ -1,6 +1,7 @@
-# AgriCare AI
+# AgriAn (AgriCare AI)
 
-Ứng dụng Android tư vấn chăm sóc cây trồng và vật nuôi cho nông hộ Việt Nam.
+Ứng dụng Android tư vấn kỹ thuật nông nghiệp thông minh (Trồng trọt & Chăn nuôi) cho nông hộ Việt Nam.
+*Khẩu hiệu: "Vụ mùa an tâm, nông gia thịnh vượng"*
 
 Đây là MVP local/demo: dữ liệu kiến thức là fixture, API dùng dev auth khi
 chạy local và chưa phải bản production.
@@ -18,7 +19,22 @@ chạy local và chưa phải bản production.
 - Python 3.12+
 - Android Studio và Android SDK
 
-## Chạy API local
+## Khởi động phát triển (1 lệnh duy nhất)
+
+Chạy file script khởi động toàn bộ:
+
+```powershell
+.\start_dev.bat
+# hoặc
+npm run dev
+```
+
+Script sẽ tự động:
+1. Khởi động Backend API (`FastAPI`) trong một cửa sổ riêng.
+2. Khởi động máy ảo Android (`Pixel_8a`) hoặc trình duyệt Edge.
+3. Chạy ứng dụng Flutter với chế độ Hot Reload (`r` để tải lại tức thì).
+
+## Chạy API local thủ công
 
 ```powershell
 Copy-Item .env.example .env
@@ -59,6 +75,8 @@ python -m pytest services/api/tests -q
 
 ## Tài liệu
 
+- [Tiến trình dự án (Progress Tracker)](docs/project-progress.md)
+- [Quy chuẩn thương hiệu & Logo (Brand Guidelines)](docs/brand-guidelines.md)
 - [Requirements](docs/requirements.md)
 - [Features](docs/features.md)
 - [API contract](docs/api-contract.md)

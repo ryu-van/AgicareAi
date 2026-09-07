@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import 'app_brand_logo.dart';
 
 Future<Domain?> showDomainPicker(BuildContext context) =>
     showModalBottomSheet<Domain>(
@@ -14,11 +15,19 @@ Future<Domain?> showDomainPicker(BuildContext context) =>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Bạn cần hỗ trợ về gì?',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              Row(
+                children: [
+                  const AppBrandLogo(size: BrandLogoSize.small),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Bạn cần hỗ trợ về gì?',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
               const Text(
@@ -40,8 +49,11 @@ Future<Domain?> showDomainPicker(BuildContext context) =>
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const CircleAvatar(
-                  backgroundColor: AppColors.infoSurface,
-                  child: Icon(Icons.pets_outlined, color: AppColors.info),
+                  backgroundColor: AppColors.harvestGoldLight,
+                  child: Icon(
+                    Icons.pets_outlined,
+                    color: AppColors.harvestGoldDark,
+                  ),
                 ),
                 title: const Text('Vật nuôi'),
                 subtitle: const Text('Sức khỏe, dinh dưỡng và chăn nuôi'),

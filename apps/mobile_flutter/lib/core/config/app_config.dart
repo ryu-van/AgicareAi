@@ -1,6 +1,11 @@
 class AppConfig {
   const AppConfig._();
 
+  static const appName = 'AgriAn';
+  static const brandName = 'AgriAn';
+  static const appTagline = 'Vụ mùa an tâm, nông gia thịnh vượng';
+  static const logoAssetPath = 'assets/images/agrian_logo.jpg';
+
   static const apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://127.0.0.1:8000',

@@ -44,8 +44,10 @@ class _JournalPageState extends State<JournalPage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              padding: const EdgeInsets.all(16.0),
         itemCount: _entries.length,
         itemBuilder: (context, index) {
           final entry = _entries[index];

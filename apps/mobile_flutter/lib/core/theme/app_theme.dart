@@ -10,13 +10,25 @@ class AppColors {
   static const foreground = Color(0xFF1E251C);
   static const mutedForeground = Color(0xFF5A6354);
 
-  // Semantic Colors
+  // Semantic Colors & Brand Triad (Trắng - Xanh - Vàng)
   static const primary = Color(0xFF3B6D11);
-  static const primaryLight = Color(0xFFDFF0C7);
+  static const primaryLight = Color(0xFFEBF5DF);
   static const primaryPressed = Color(0xFF275300);
+
+  // Vàng Mùa Gặt & Nắng Ấm (Harvest Gold & Warm Amber)
+  static const harvestGold = Color(0xFFD49A00);
+  static const harvestGoldLight = Color(0xFFFEF6E4);
+  static const harvestGoldDark = Color(0xFF9E7100);
+  static const sunAmber = Color(0xFFD97706);
+  static const sunAmberLight = Color(0xFFFEF3C7);
   static const brand = Color(0xFFB8931B);
+
+  // Xanh Trí Tuệ & Công Nghệ (Tech Blue)
+  static const techBlue = Color(0xFF1665B5);
+  static const techBlueLight = Color(0xFFEAF2FB);
   static const info = Color(0xFF185FA5);
   static const infoSurface = Color(0xFFE6F1FB);
+
   static const warning = Color(0xFF854F0B);
   static const danger = Color(0xFFA32D2D);
   static const success = Color(0xFF2F6B3B);

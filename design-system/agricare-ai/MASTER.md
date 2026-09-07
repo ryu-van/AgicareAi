@@ -6,14 +6,13 @@
 
 ---
 
-**Project:** AgriCare AI
-**Generated:** 2026-08-25 11:21:00
-**Category:** Agriculture advisory mobile app
+**Project:** AgriAn (trước đây: AgriCare AI)
+**Brand Name:** AgriAn (*"Vụ mùa an tâm, nông gia thịnh vượng"*)
+**Official Logo:** Concept 2 — Chiếc Khiên Bảo Vệ Đa Nhánh (`design-system/agrian_logo.jpg`)
+**Guidelines:** Tham khảo chi tiết tại `docs/brand-guidelines.md`
+**Generated:** 2026-08-25 11:21:00 (Cập nhật nhận diện 2026-09-07)
+**Category:** Agriculture advisory mobile & web platform
 **Visual direction:** Material 3 interaction foundation + Organic Biophilic visual language
-
----
-
-## Global Rules
 
 ### Color Palette
 
@@ -49,13 +48,17 @@ The bottom navigation is a distinct dark-green control surface, not a white card
 | Reminder surface | `#FAEEDA` | `#3A2A16` | Reminder and medium-confidence context |
 | Brand surface | `#FBF3D2` | `#3A3014` | Logo/splash/season badge only |
 
-**Color principles:**
+**Color principles (Trắng - Xanh - Vàng Balance):**
 
+- **Avoid Mono-Green Overload**: Never flood the screen with large blocks of solid green. The UI must feel fresh, open, and airy like morning light on a harvest farm.
+- **60-30-10 Harmony Rule**:
+  - **60% Base White / Cream (`#FFFFFF`, `#FBFBF6`, `#FAFBF7`)**: For clean background and elevated card surfaces with ample negative space.
+  - **30% Eco Green (`#3B6D11`, `#275300`)**: For primary actions (CTA), navigation anchor, and healthy plant signals.
+  - **10% Harvest Gold & Amber (`#D49A00`, `#FEF6E4`, `#D97706`) & Tech Blue (`#1665B5`)**: For knowledge handbooks, daily farm tips, warm emblem badges, and intelligent AI interaction.
 - Green is always the primary action color, including the main “Capture diagnosis photo” CTA and selected tabs in both Plant and Animal tabs.
 - Both Plant and Animal use the same functional color system; only content and imagery change.
-- Yellow is a brand/harvest accent for logo, splash screen, season and harvest badges; it is never an alert color.
-- Blue is for links, secondary actions and neutral information.
-- Amber is for reminders and medium-confidence results.
+- Gold / Amber is a brand/harvest accent for handbook, season badges, tips, and livestock emblem; it is never an alert color.
+- Blue is for AI assistant, links, secondary actions and neutral information.
 - Red is reserved for urgent warnings, suspected outbreaks and destructive actions.
 - Tab changes use selected state (underline, subtle surface, weight) rather than a different color theme.
 - Color is never the only signal: pair it with text, icon and/or status label. This is mandatory when a harvest badge and warning badge are adjacent.

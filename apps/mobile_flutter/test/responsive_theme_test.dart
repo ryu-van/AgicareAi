@@ -25,7 +25,7 @@ void main() {
     });
 
     await tester.pumpWidget(AgriCareApp());
-    expect(find.text('AgriCare AI'), findsOneWidget);
+    expect(find.text('AgriAn'), findsOneWidget);
     expect(find.text('Trang chủ'), findsOneWidget);
   });
 
@@ -40,7 +40,7 @@ void main() {
     });
 
     await tester.pumpWidget(AgriCareApp());
-    expect(find.text('AgriCare AI'), findsOneWidget);
+    expect(find.text('AgriAn'), findsOneWidget);
     expect(find.byType(AppFloatingCenterNavShell), findsOneWidget);
     expect(
       Theme.of(tester.element(find.byType(Scaffold).first)).brightness,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
+export 'app_brand_logo.dart';
 
 enum StatusTone { info, warning, success, neutral, danger }
 
@@ -118,6 +119,9 @@ class FeatureCard extends StatelessWidget {
     required this.subtitle,
     this.status,
     this.onTap,
+    this.iconColor,
+    this.iconBackgroundColor,
+    this.statusTone = StatusTone.neutral,
   });
 
   final IconData icon;
@@ -125,63 +129,72 @@ class FeatureCard extends StatelessWidget {
   final String subtitle;
   final String? status;
   final VoidCallback? onTap;
+  final Color? iconColor;
+  final Color? iconBackgroundColor;
+  final StatusTone statusTone;
 
   @override
-  Widget build(BuildContext context) => AppCard(
-    padding: const EdgeInsets.all(AppSpacing.sm),
-    onTap: onTap,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: AppColors.primaryLight.withValues(alpha: 0.5),
-                shape: BoxShape.circle,
-                boxShadow: AppShadows.softFloating(
-                  shadowColor: AppColors.primary,
-                  opacity: 0.15,
+  Widget build(BuildContext context) {
+    final effectiveIconColor = iconColor ?? AppColors.primary;
+    final effectiveBgColor = iconBackgroundColor ??
+        AppColors.primaryLight.withValues(alpha: 0.5);
+
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.sm),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: effectiveBgColor,
+                  shape: BoxShape.circle,
+                  boxShadow: AppShadows.softFloating(
+                    shadowColor: effectiveIconColor,
+                    opacity: 0.2,
+                  ),
+                ),
+                child: Icon(icon, size: 20, color: effectiveIconColor),
+              ),
+              if (status != null)
+                Flexible(
+                  child: StatusChip(label: status!, tone: statusTone),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.mutedForeground,
                 ),
               ),
-              child: Icon(icon, size: 20, color: AppColors.primary),
-            ),
-            if (status != null)
-              Flexible(
-                child: StatusChip(label: status!, tone: StatusTone.neutral),
-              ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppColors.mutedForeground,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class StatusChip extends StatelessWidget {
@@ -625,142 +638,141 @@ class AppFloatingCenterNavShell extends StatelessWidget {
     ];
 
     return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-      height: 70,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.bottomCenter,
-        children: [
-          // Hidden NavigationBar for test suite compatibility
-          Offstage(
-            child: NavigationBar(
-              selectedIndex: selectedIndex > 1
-                  ? selectedIndex - 1
-                  : selectedIndex,
-              onDestinationSelected: (index) {
-                onDestinationSelected(index >= 2 ? index + 1 : index);
-              },
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.home),
-                  label: 'Trang chủ',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.menu_book),
-                  label: 'Kiến thức',
-                ),
-                NavigationDestination(icon: Icon(Icons.chat), label: 'Hỏi AI'),
-                NavigationDestination(icon: Icon(Icons.person), label: 'Hồ sơ'),
-              ],
-            ),
+      decoration: BoxDecoration(
+        color: navBg,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF2C3527) : const Color(0xFFE5E9E0),
+            width: 1,
           ),
-
-          // White Pill Floating Card Shell
-          Container(
-            height: 62,
-            decoration: BoxDecoration(
-              color: navBg,
-              borderRadius: BorderRadius.circular(34),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
-                  offset: const Offset(0, 8),
-                  blurRadius: 22,
-                  spreadRadius: 0,
-                ),
-                BoxShadow(
-                  color: AppColors.shadowLight.withValues(alpha: 0.9),
-                  offset: const Offset(-2, -2),
-                  blurRadius: 6,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                // Left 2 Tabs (Trang chủ, Kiến thức)
-                Expanded(
-                  flex: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(context, navItems[0]),
-                      _buildNavItem(context, navItems[1]),
-                    ],
-                  ),
-                ),
-                // Center Gap for Floating Camera FAB
-                const SizedBox(width: 58),
-                // Right 2 Tabs (Hỏi AI, Hồ sơ)
-                Expanded(
-                  flex: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(context, navItems[2]),
-                      _buildNavItem(context, navItems[3]),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            offset: const Offset(0, -3),
+            blurRadius: 8,
           ),
-
-          // Center Prominent Floating Camera Button (FAB)
-          Positioned(
-            top: 0,
-            child: Semantics(
-              button: true,
-              label: 'Chụp ảnh chẩn đoán',
-              child: GestureDetector(
-                onTap: onCenterTap,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF4C8A17), Color(0xFF2E570C)],
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            offset: const Offset(0, 6),
-                            blurRadius: 16,
-                            spreadRadius: 1,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withValues(alpha: 0.4),
-                            offset: const Offset(-2, -2),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.camera_alt_rounded,
-                        color: Colors.white,
-                        size: 26,
-                      ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 62,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.bottomCenter,
+            children: [
+              // Hidden NavigationBar for test suite compatibility
+              Offstage(
+                child: NavigationBar(
+                  selectedIndex: selectedIndex > 1
+                      ? selectedIndex - 1
+                      : selectedIndex,
+                  onDestinationSelected: (index) {
+                    onDestinationSelected(index >= 2 ? index + 1 : index);
+                  },
+                  destinations: const [
+                    NavigationDestination(
+                      icon: Icon(Icons.home),
+                      label: 'Trang chủ',
                     ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'Chẩn đoán',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
+                    NavigationDestination(
+                      icon: Icon(Icons.menu_book),
+                      label: 'Kiến thức',
                     ),
+                    NavigationDestination(icon: Icon(Icons.chat), label: 'Hỏi AI'),
+                    NavigationDestination(icon: Icon(Icons.person), label: 'Hồ sơ'),
                   ],
                 ),
               ),
-            ),
+
+              // Full-width bar tabs
+              Row(
+                children: [
+                  // Left 2 Tabs (Trang chủ, Kiến thức)
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(context, navItems[0]),
+                        _buildNavItem(context, navItems[1]),
+                      ],
+                    ),
+                  ),
+                  // Center Gap for Floating Camera FAB
+                  const SizedBox(width: 60),
+                  // Right 2 Tabs (Hỏi AI, Hồ sơ)
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildNavItem(context, navItems[2]),
+                        _buildNavItem(context, navItems[3]),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Center Prominent Floating Camera Button (FAB)
+              Positioned(
+                top: -16,
+                child: Semantics(
+                  button: true,
+                  label: 'Chụp ảnh chẩn đoán',
+                  child: GestureDetector(
+                    onTap: onCenterTap,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFF4C8A17), Color(0xFF2E570C)],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: navBg,
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.35),
+                                offset: const Offset(0, 4),
+                                blurRadius: 10,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Chẩn đoán',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

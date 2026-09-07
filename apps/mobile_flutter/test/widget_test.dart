@@ -7,7 +7,7 @@ import 'package:agricare_ai_mobile/core/network/api_client.dart';
 void main() {
   testWidgets('renders AgriCare home shell', (tester) async {
     await tester.pumpWidget(AgriCareApp());
-    expect(find.text('AgriCare AI'), findsOneWidget);
+    expect(find.text('AgriAn'), findsOneWidget);
     expect(find.text('Bạn muốn làm gì hôm nay?'), findsOneWidget);
     expect(find.text('Trang chủ'), findsOneWidget);
   });

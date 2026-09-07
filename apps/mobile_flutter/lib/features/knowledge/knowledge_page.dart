@@ -167,11 +167,17 @@ class _KnowledgePageState extends State<KnowledgePage> {
   Widget build(BuildContext context) => ListView(
     padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
     children: [
-      Text(
-        'Kiến thức',
-        style: Theme.of(
-          context,
-        ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+      Row(
+        children: [
+          const AppBrandLogo(size: BrandLogoSize.small),
+          const SizedBox(width: 10),
+          Text(
+            'Kiến thức',
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+        ],
       ),
       const SizedBox(height: 6),
       const Text(

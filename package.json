@@ -2,6 +2,9 @@
   "name": "agricare-ai",
   "private": true,
   "scripts": {
-    "api": "python -m uvicorn services.api.app.main:app --reload"
+    "api": "python -m uvicorn services.api.app.main:app --reload",
+    "dev": "powershell -ExecutionPolicy Bypass -File .\\tool\\start_dev.ps1",
+    "dev:emulator": "powershell -ExecutionPolicy Bypass -File .\\tool\\start_dev.ps1 -Target emulator",
+    "dev:web": "powershell -ExecutionPolicy Bypass -File .\\tool\\start_dev.ps1 -Target web"
   }
 }
