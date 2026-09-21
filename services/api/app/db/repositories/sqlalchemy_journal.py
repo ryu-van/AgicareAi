@@ -44,8 +44,9 @@ class SqlAlchemyJournalRepository:
             stmt = stmt.where(JournalEntry.subject_id == subject_id)
         if since:
             try:
+                from sqlalchemy import func
                 since_dt = datetime.fromisoformat(since)
-                stmt = stmt.where(JournalEntry.updated_at > since_dt)
+                stmt = stmt.where(func.coalesce(JournalEntry.updated_at, JournalEntry.created_at) > since_dt)
             except Exception:
                 pass
         stmt = stmt.order_by(JournalEntry.observed_at.desc()).limit(limit)
@@ -67,23 +68,24 @@ class SqlAlchemyJournalRepository:
         if not entry:
             raise AppError(404, "NOT_FOUND", "Không tìm thấy nhật ký canh tác.")
 
-        if request.subject_id is not None:
+        fields = request.model_fields_set
+        if "subject_id" in fields and request.subject_id is not None:
             subject = session.scalar(select(Subject).where(Subject.id == request.subject_id, Subject.status == "published"))
             if subject is None:
                 raise AppError(422, "VALIDATION_ERROR", "Đối tượng chưa được hỗ trợ.")
             entry.subject_id = request.subject_id
 
-        if request.title is not None:
+        if "title" in fields and request.title is not None:
             entry.title = request.title
-        if request.entry_type is not None:
+        if "entry_type" in fields and request.entry_type is not None:
             entry.entry_type = request.entry_type
-        if request.observed_at is not None:
+        if "observed_at" in fields and request.observed_at is not None:
             entry.observed_at = request.observed_at
-        if request.timezone is not None:
+        if "timezone" in fields and request.timezone is not None:
             entry.timezone = request.timezone
-        if request.notes is not None:
+        if "notes" in fields:
             entry.notes = request.notes
-        if request.photo_url is not None:
+        if "photo_url" in fields:
             entry.photo_url = request.photo_url
 
         entry.updated_at = datetime.now(timezone.utc)
@@ -91,12 +93,17 @@ class SqlAlchemyJournalRepository:
         return entry
 
     def delete_journal_entry(self, session: Session, user_id: str, entry_id: str) -> bool:
-        entry = self.get_journal_entry(session, user_id, entry_id)
+        entry = session.scalar(
+            select(JournalEntry).where(
+                JournalEntry.id == entry_id,
+                JournalEntry.user_id == user_id,
+            )
+        )
         if not entry:
             raise AppError(404, "NOT_FOUND", "Không tìm thấy nhật ký canh tác.")
 
-        entry.deleted_at = datetime.now(timezone.utc)
-        session.flush()
-        session.commit()
+        if entry.deleted_at is None:
+            entry.deleted_at = datetime.now(timezone.utc)
+            session.flush()
         return True
 

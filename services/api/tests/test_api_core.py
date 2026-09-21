@@ -23,6 +23,10 @@ def client(tmp_path):
                 Domain(id="plant", label="Trồng trọt", sort_order=1),
                 Domain(id="animal", label="Chăn nuôi", sort_order=2),
                 Subject(id="chicken", domain="animal", name="Gà", status="published"),
+                Subject(id="pig", domain="animal", name="Heo", status="published"),
+                Subject(id="rice", domain="plant", name="Lúa", status="published"),
+                Subject(id="coffee", domain="plant", name="Cà phê", status="published"),
+                Subject(id="durian", domain="plant", name="Sầu riêng", status="published"),
                 KnowledgeArticle(
                     id="10000000-0000-4000-8000-000000000001",
                     domain="animal",
@@ -330,9 +334,13 @@ def test_journal_crud_lifecycle_and_sync_delete(client):
     assert patch_res.json()["title"] == "Đã tiêm vắc xin Newcastle xong"
     assert patch_res.json()["notes"] == "Gà khỏe, không có phản ứng phụ"
 
-    # 4. DELETE soft-delete
+    # 4. DELETE soft-delete (and verify idempotent repeated delete)
     del_res = test_client.delete(f"/v1/journal/entries/{entry_id}")
     assert del_res.status_code == 204
+
+    # Idempotent DELETE retry returns 204
+    del_retry = test_client.delete(f"/v1/journal/entries/{entry_id}")
+    assert del_retry.status_code == 204
 
     # 5. Verify it is no longer returned in GET by ID or list
     get_after = test_client.get(f"/v1/journal/entries/{entry_id}")
@@ -341,7 +349,7 @@ def test_journal_crud_lifecycle_and_sync_delete(client):
     list_after = test_client.get("/v1/journal/entries")
     assert all(item["id"] != entry_id for item in list_after.json()["items"])
 
-    # 6. Test sync delete operation
+    # 6. Test sync upsert (F-01 edit) and sync delete operation
     sync_create = test_client.post(
         "/v1/sync/batch",
         headers={"Idempotency-Key": "sync-create-batch-key-01"},
@@ -357,6 +365,7 @@ def test_journal_crud_lifecycle_and_sync_delete(client):
                         "observed_at": datetime.now(timezone.utc).isoformat(),
                         "timezone": "Asia/Ho_Chi_Minh",
                         "title": "Cho ăn cám đợt sáng",
+                        "notes": "Cám công nghiệp đợt 1",
                         "client_event_id": "sync-journal-del-evt-1",
                     },
                 }
@@ -366,6 +375,53 @@ def test_journal_crud_lifecycle_and_sync_delete(client):
     assert sync_create.status_code == 200
     created_id = sync_create.json()["results"][0]["entity_id"]
     assert created_id is not None
+
+    # Sync batch edit: send upsert with new event_id and updated title/notes
+    sync_edit = test_client.post(
+        "/v1/sync/batch",
+        headers={"Idempotency-Key": "sync-edit-batch-key-01"},
+        json={
+            "events": [
+                {
+                    "event_id": "sync-journal-del-evt-1-edit",
+                    "entity": "journal_entry",
+                    "operation": "upsert",
+                    "payload": {
+                        "entry_id": created_id,
+                        "original_event_id": "sync-journal-del-evt-1",
+                        "title": "Cho ăn cám đợt sáng (Đã điều chỉnh lượng cám)",
+                        "notes": "Tăng thêm 2kg cám",
+                        "photo_url": "file:///photos/feed.jpg",
+                    },
+                }
+            ]
+        },
+    )
+    assert sync_edit.status_code == 200
+    assert sync_edit.json()["results"][0]["status"] == "applied"
+
+    # Verify updated values on server
+    verify_edit = test_client.get(f"/v1/journal/entries/{created_id}")
+    assert verify_edit.status_code == 200
+    assert verify_edit.json()["title"] == "Cho ăn cám đợt sáng (Đã điều chỉnh lượng cám)"
+    assert verify_edit.json()["notes"] == "Tăng thêm 2kg cám"
+    assert verify_edit.json()["photo_url"] == "file:///photos/feed.jpg"
+
+    # Test F-03: PATCH with photo_url: null to clear photo
+    patch_clear_photo = test_client.patch(
+        f"/v1/journal/entries/{created_id}",
+        headers={"Idempotency-Key": "journal-patch-clear-photo-01"},
+        json={"photo_url": None, "notes": None},
+    )
+    assert patch_clear_photo.status_code == 200
+    assert patch_clear_photo.json()["photo_url"] is None
+    assert patch_clear_photo.json()["notes"] is None
+
+    # Test F-02: GET with ?since= returns newly created entry
+    past_iso = datetime(2020, 1, 1, tzinfo=timezone.utc).isoformat()
+    list_since = test_client.get(f"/v1/journal/entries?since={past_iso}")
+    assert list_since.status_code == 200
+    assert any(item["id"] == created_id for item in list_since.json()["items"])
 
     # Now delete via sync batch operation: delete
     sync_delete = test_client.post(
@@ -379,7 +435,7 @@ def test_journal_crud_lifecycle_and_sync_delete(client):
                     "operation": "delete",
                     "payload": {
                         "entry_id": created_id,
-                        "client_event_id": "sync-journal-del-evt-1",
+                        "client_event_id": "sync-journal-del-evt-1-edit",
                     },
                 }
             ]

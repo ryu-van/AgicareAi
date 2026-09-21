@@ -162,7 +162,9 @@ class ApiJournalRepository implements JournalRepository {
     if (existing == null) return null;
 
     final now = DateTime.now().toUtc();
+    final newClientEventId = 'evt-${now.microsecondsSinceEpoch}-${++_idCounter}';
     final updated = existing.copyWith(
+      clientEventId: newClientEventId,
       title: title?.trim().isNotEmpty == true ? title!.trim() : existing.title,
       entryType: entryType ?? existing.entryType,
       subjectId: subjectId ?? existing.subjectId,
@@ -176,10 +178,13 @@ class ApiJournalRepository implements JournalRepository {
     await localStore.saveEntry(updated);
 
     final outboxEvent = OutboxEventEntity(
-      eventId: 'evt-${now.microsecondsSinceEpoch}-${++_idCounter}',
+      eventId: newClientEventId,
       entity: 'journal_entry',
       operation: 'upsert',
       payload: {
+        'entry_id': updated.serverId,
+        'original_event_id': existing.clientEventId,
+        'client_event_id': newClientEventId,
         'subject_id': updated.subjectId,
         'entry_type': updated.entryType,
         'observed_at': updated.observedAt.toIso8601String(),
@@ -187,7 +192,6 @@ class ApiJournalRepository implements JournalRepository {
         'title': updated.title,
         'notes': updated.notes,
         'photo_url': updated.photoPath,
-        'client_event_id': updated.clientEventId,
       },
       status: OutboxStatus.pending,
       createdAt: now,

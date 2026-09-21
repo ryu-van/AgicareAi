@@ -92,6 +92,7 @@ class JournalEntryEntity {
 
   JournalEntryEntity copyWith({
     String? serverId,
+    String? clientEventId,
     String? title,
     String? entryType,
     String? subjectId,
@@ -107,7 +108,7 @@ class JournalEntryEntity {
     return JournalEntryEntity(
       localId: localId,
       serverId: serverId ?? this.serverId,
-      clientEventId: clientEventId,
+      clientEventId: clientEventId ?? this.clientEventId,
       subjectId: subjectId ?? this.subjectId,
       entryType: entryType ?? this.entryType,
       title: title ?? this.title,

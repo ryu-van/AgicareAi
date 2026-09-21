@@ -231,5 +231,62 @@ void main() {
       final listAfterDelete = await repository.fetchJournalEntries();
       expect(listAfterDelete.isEmpty, isTrue);
     });
+
+    test('editEntry offline synchronizes and flips status to synced without freezing', () async {
+      final mockClient = MockClient((request) async {
+        if (request.url.path.contains('/v1/sync/batch')) {
+          final reqBody = jsonDecode(request.body) as Map<String, dynamic>;
+          final events = reqBody['events'] as List<dynamic>;
+          final results = events.map((e) {
+            final ev = e as Map<String, dynamic>;
+            return {
+              'event_id': ev['event_id'],
+              'status': 'applied',
+              'entity_id': 'srv-entry-1',
+            };
+          }).toList();
+          return http.Response(jsonEncode({'results': results}), 200);
+        }
+        return http.Response('{}', 404);
+      });
+
+      final apiClient = ApiClient(client: mockClient, baseUrl: 'http://test');
+      final repository = ApiJournalRepository(
+        apiClient: apiClient,
+        localStore: localStore,
+        outboxStore: outboxStore,
+      );
+
+      // 1. Create offline
+      final created = await repository.createEntry(
+        title: 'Bón phân lót',
+        entryType: 'treatment',
+        subjectId: 'rice',
+      );
+      expect(created.syncStatus, SyncStatus.pendingSync);
+
+      // 2. Sync creation
+      await repository.syncPendingEvents();
+      var entry = await localStore.getEntryByLocalId(created.localId);
+      expect(entry!.syncStatus, SyncStatus.synced);
+
+      // 3. Edit offline
+      await repository.editEntry(
+        localId: created.localId,
+        title: 'Bón phân lót (Bổ sung lân)',
+      );
+      entry = await localStore.getEntryByLocalId(created.localId);
+      expect(entry!.title, 'Bón phân lót (Bổ sung lân)');
+      expect(entry.syncStatus, SyncStatus.pendingSync);
+
+      // 4. Sync edit
+      final syncResult = await repository.syncPendingEvents();
+      expect(syncResult.success, isTrue);
+
+      // 5. Verify status correctly updated to synced (no freeze!)
+      entry = await localStore.getEntryByLocalId(created.localId);
+      expect(entry!.syncStatus, SyncStatus.synced);
+      expect(entry.title, 'Bón phân lót (Bổ sung lân)');
+    });
   });
 }

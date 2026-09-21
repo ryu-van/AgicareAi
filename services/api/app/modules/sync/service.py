@@ -24,17 +24,41 @@ def apply_event(session: Session, user_id: str, event: SyncEventRequest) -> Sync
     entity_id: str | None = None
     if event.entity == "journal_entry" and event.operation == "upsert":
         try:
-            from services.api.app.modules.journal.schemas import CreateJournalEntryRequest
-            from services.api.app.modules.journal.service import create_journal_entry
+            from services.api.app.db.models import JournalEntry
+            from services.api.app.modules.journal.schemas import CreateJournalEntryRequest, UpdateJournalEntryRequest
+            from services.api.app.modules.journal.service import create_journal_entry, update_journal_entry
 
-            req = CreateJournalEntryRequest.model_validate(
-                {
-                    "client_event_id": event.event_id,
-                    **event.payload,
-                }
-            )
-            entry = create_journal_entry(session, user_id, req)
-            entity_id = entry.id
+            target_entry: JournalEntry | None = None
+            candidate_id = event.payload.get("original_event_id") or event.payload.get("client_event_id") or event.event_id
+            if candidate_id:
+                target_entry = session.scalar(
+                    select(JournalEntry).where(
+                        JournalEntry.user_id == user_id,
+                        JournalEntry.client_event_id == candidate_id,
+                    )
+                )
+            if not target_entry and event.payload.get("entry_id"):
+                target_entry = session.scalar(
+                    select(JournalEntry).where(
+                        JournalEntry.user_id == user_id,
+                        JournalEntry.id == event.payload["entry_id"],
+                    )
+                )
+
+            if target_entry:
+                update_req = UpdateJournalEntryRequest.model_validate(event.payload)
+                updated_entry = update_journal_entry(session, user_id, target_entry.id, update_req)
+                updated_entry.client_event_id = event.event_id
+                entity_id = updated_entry.id
+            else:
+                req = CreateJournalEntryRequest.model_validate(
+                    {
+                        "client_event_id": event.event_id,
+                        **event.payload,
+                    }
+                )
+                entry = create_journal_entry(session, user_id, req)
+                entity_id = entry.id
         except Exception:
             pass
     elif event.entity == "journal_entry" and event.operation == "delete":

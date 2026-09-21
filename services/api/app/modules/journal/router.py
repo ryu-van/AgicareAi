@@ -109,5 +109,7 @@ def delete_entry(
     session: Session = Depends(get_session),
 ) -> Response:
     delete_journal_entry(session, user.user_id, entry_id)
+    session.commit()
     return Response(status_code=204)
+
 

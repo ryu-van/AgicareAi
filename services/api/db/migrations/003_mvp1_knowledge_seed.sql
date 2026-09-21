@@ -5,7 +5,9 @@ insert into public.subjects (id, domain, name, status) values
   ('chicken', 'animal', 'Gà', 'published'),
   ('pig', 'animal', 'Heo', 'published'),
   ('rice', 'plant', 'Lúa', 'published'),
-  ('vegetables', 'plant', 'Rau', 'published')
+  ('vegetables', 'plant', 'Rau', 'published'),
+  ('coffee', 'plant', 'Cà phê', 'published'),
+  ('durian', 'plant', 'Sầu riêng', 'published')
 on conflict (id) do update set domain = excluded.domain, name = excluded.name, status = excluded.status;
 
 insert into public.knowledge_articles (
