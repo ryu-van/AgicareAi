@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgriAn — Project technical diagrams</title>
+  <style>
+    :root { --paper:#fbfbf6; --surface:#fff; --ink:#1f3310; --muted:#52634b; --rule:#cbd6c4; --green:#3b6d11; --green-dark:#275300; --gold:#d49a00; --gold-tint:#fef6e4; --blue:#1665b5; --red:#a32d2d; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.55 system-ui,"Segoe UI",sans-serif; }
+    main { max-width:1320px; margin:auto; padding:48px 32px 72px; } h1 { font-size:36px; line-height:1.12; margin:4px 0 8px; } h2 { font-size:24px; margin:0; } p { margin:4px 0 0; color:var(--muted); } .eyebrow,.tag,.legend { font:500 10px "Roboto Mono",monospace; letter-spacing:.12em; text-transform:uppercase; } .eyebrow { color:var(--green); }
+    section { padding:30px 0 38px; border-top:1px solid var(--rule); } .head { display:flex; gap:24px; align-items:baseline; justify-content:space-between; margin-bottom:16px; } .head p { max-width:680px; text-align:right; }
+    svg { display:block; width:100%; height:auto; background:var(--surface); border:1px solid var(--rule); border-radius:8px; } .box { fill:var(--surface); stroke:var(--ink); stroke-width:1.25; rx:8; } .focus { fill:#eef5e8; stroke:var(--green); stroke-width:2; rx:8; } .store { fill:#f3f6f1; stroke:var(--muted); stroke-width:1.25; rx:8; } .external { fill:var(--gold-tint); stroke:var(--gold); stroke-width:1.5; rx:8; } .danger { fill:#fff1f0; stroke:var(--red); stroke-width:1.5; rx:8; } .node { font:600 16px system-ui,"Segoe UI",sans-serif; fill:var(--ink); text-anchor:middle; } .sub { font:11px ui-monospace,Consolas,monospace; fill:var(--muted); text-anchor:middle; } .tag { fill:var(--muted); font-size:9px; text-anchor:middle; } .edge { stroke:var(--muted); stroke-width:1.5; fill:none; marker-end:url(#arrow); } .api { stroke:var(--blue); stroke-width:1.8; fill:none; marker-end:url(#arrow-blue); } .accent { stroke:var(--green); stroke-width:2; fill:none; marker-end:url(#arrow-green); } .dash { stroke-dasharray:6 5; } .label { font:10px ui-monospace,Consolas,monospace; fill:var(--muted); text-anchor:middle; } .label-blue { fill:var(--blue); } .callout { fill:var(--gold-tint); stroke:var(--gold); stroke-width:1; rx:6; } .callout-text { font:600 12px system-ui,"Segoe UI",sans-serif; fill:#6f4e00; text-anchor:middle; } .legend-line { stroke:var(--rule); } footer { border-top:1px solid var(--rule); padding-top:18px; color:var(--muted); font-size:13px; }
+    @media print { main { padding:24px; } section { break-inside:avoid; } }
+  </style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">AgriAn · technical solution · September 2026</div>
+  <h1>Project technical diagrams</h1>
+  <p>Architecture and core flows for the Flutter mobile client and FastAPI modular monolith. Solid paths describe target behavior; the current local-only implementation is called out where material.</p>
+
+  <section>
+    <div class="head"><div><div class="eyebrow">01 · architecture</div><h2>Module boundary and trust boundary</h2></div><p>One modular monolith keeps policy at the API boundary; external services are adapters, not feature-module dependencies.</p></div>
+    <svg viewBox="0 0 1280 620" role="img" aria-labelledby="architecture-title architecture-desc">
+      <title id="architecture-title">AgriAn target architecture</title><desc id="architecture-desc">Flutter app communicates with a FastAPI modular monolith, which uses PostgreSQL, Supabase services and guarded AI providers.</desc>
+      <defs><marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#52634b"/></marker><marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1665b5"/></marker><marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3b6d11"/></marker></defs>
+      <!-- paths first -->
+      <path class="api" d="M250 250 H360"/><path class="edge" d="M560 250 H650"/><path class="edge" d="M880 250 H970"/><path class="api" d="M460 370 V450 H250 V370"/><path class="api" d="M770 370 V450 H1030 V370"/><path class="accent" d="M770 300 V450 H640 V370"/>
+      <rect class="box" x="70" y="190" width="180" height="120"/><text class="tag" x="160" y="218">ANDROID CLIENT</text><text class="node" x="160" y="255">Flutter app</text><text class="sub" x="160" y="280">UI · local cache · outbox</text>
+      <rect class="focus" x="360" y="170" width="200" height="160"/><text class="tag" x="460" y="200">TRUST BOUNDARY</text><text class="node" x="460" y="242">FastAPI API</text><text class="sub" x="460" y="268">auth · errors · idempotency</text><text class="sub" x="460" y="288">request ID · rate limit</text>
+      <rect class="box" x="650" y="170" width="230" height="160"/><text class="tag" x="765" y="200">FEATURE MODULES</text><text class="node" x="765" y="242">Application services</text><text class="sub" x="765" y="268">identity · knowledge · chat</text><text class="sub" x="765" y="288">farm · journal · reminders · sync</text>
+      <rect class="store" x="970" y="190" width="220" height="120"/><text class="tag" x="1080" y="218">SOURCE OF TRUTH</text><text class="node" x="1080" y="255">PostgreSQL</text><text class="sub" x="1080" y="280">RLS · migrations · audit data</text>
+      <rect class="external" x="70" y="450" width="180" height="100"/><text class="tag" x="160" y="478">EXTERNAL</text><text class="node" x="160" y="512">Supabase Auth</text><text class="sub" x="160" y="534">JWT · JWKS</text>
+      <rect class="external" x="550" y="450" width="180" height="100"/><text class="tag" x="640" y="478">EXTERNAL</text><text class="node" x="640" y="512">AI / RAG provider</text><text class="sub" x="640" y="534">feature-flagged</text>
+      <rect class="external" x="940" y="450" width="180" height="100"/><text class="tag" x="1030" y="478">EXTERNAL</text><text class="node" x="1030" y="512">Private storage</text><text class="sub" x="1030" y="534">attachments only</text>
+      <rect x="450" y="228" width="20" height="14" rx="2" fill="#e7f0fc" stroke="#1665b5"/><text class="tag" x="460" y="238" fill="#1665b5">API</text>
+      <line class="legend-line" x1="40" y1="580" x2="1240" y2="580"/><text class="legend" x="40" y="606" fill="#52634b">LEGEND</text><line class="api" x1="130" y1="602" x2="164" y2="602"/><text class="sub" x="220" y="606">authenticated HTTP</text><line class="accent" x1="350" y1="602" x2="384" y2="602"/><text class="sub" x="442" y="606">guarded AI path</text><rect class="external" x="570" y="592" width="18" height="14"/><text class="sub" x="680" y="606">managed integration</text>
+    </svg>
+  </section>
+
+  <section>
+    <div class="head"><div><div class="eyebrow">02 · sequence</div><h2>Production authentication and session recovery</h2></div><p>Supabase owns sign-in; the API verifies access tokens. A refresh failure preserves drafts and requires a new sign-in.</p></div>
+    <svg viewBox="0 0 1280 620" role="img" aria-labelledby="auth-title auth-desc">
+      <title id="auth-title">AgriAn authentication sequence</title><desc id="auth-desc">The Flutter client obtains a Supabase session, calls FastAPI with a JWT, refreshes a token once on expiry, and returns to sign-in if refresh fails.</desc>
+      <defs><marker id="arrow-auth" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1665b5"/></marker><marker id="arrow-auth-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3b6d11"/></marker></defs>
+      <path d="M180 130 V540 M480 130 V540 M780 130 V540 M1080 130 V540" stroke="#cbd6c4" stroke-dasharray="6 6"/>
+      <path d="M190 190 H470" stroke="#1665b5" stroke-width="1.8" fill="none" marker-end="url(#arrow-auth)"/><path d="M490 260 H770" stroke="#1665b5" stroke-width="1.8" fill="none" marker-end="url(#arrow-auth)"/><path d="M790 330 H1070" stroke="#1665b5" stroke-width="1.8" fill="none" marker-end="url(#arrow-auth)"/><path d="M1070 390 H790" stroke="#52634b" stroke-width="1.5" fill="none" marker-end="url(#arrow-auth)"/><path d="M490 460 H770" stroke="#3b6d11" stroke-width="2" fill="none" marker-end="url(#arrow-auth-green)"/>
+      <rect class="box" x="100" y="50" width="160" height="60"/><text class="node" x="180" y="84">User</text><rect class="focus" x="400" y="50" width="160" height="60"/><text class="node" x="480" y="84">Flutter app</text><rect class="external" x="700" y="50" width="160" height="60"/><text class="node" x="780" y="84">Supabase Auth</text><rect class="box" x="1000" y="50" width="160" height="60"/><text class="node" x="1080" y="84">FastAPI API</text>
+      <rect x="270" y="165" width="124" height="18" fill="#fff"/><text class="label label-blue" x="332" y="178">sign in / OTP</text><rect x="566" y="235" width="126" height="18" fill="#fff"/><text class="label label-blue" x="629" y="248">access token</text><rect x="874" y="305" width="126" height="18" fill="#fff"/><text class="label label-blue" x="937" y="318">Bearer JWT</text><rect x="878" y="365" width="104" height="18" fill="#fff"/><text class="label" x="930" y="378">401 expired</text><rect x="568" y="435" width="128" height="18" fill="#fff"/><text class="label" x="632" y="448">refresh once</text>
+      <rect class="callout" x="370" y="505" width="220" height="45"/><text class="callout-text" x="480" y="534">refresh fails → preserve drafts, sign in</text><path d="M590 528 H760 V490" stroke="#d49a00" stroke-width="1.25" fill="none"/>
+      <line class="legend-line" x1="40" y1="580" x2="1240" y2="580"/><text class="legend" x="40" y="606" fill="#52634b">INVARIANT</text><text class="sub" x="285" y="606">Dev token is valid only when APP_ENV=local and DEV_AUTH_ENABLED=true.</text>
+    </svg>
+  </section>
+
+  <section>
+    <div class="head"><div><div class="eyebrow">03 · process</div><h2>Safe, grounded RAG answer path</h2></div><p>The answer is permitted only when published evidence, citation validation and safety policy all pass.</p></div>
+    <svg viewBox="0 0 1280 580" role="img" aria-labelledby="rag-title rag-desc">
+      <title id="rag-title">Safe RAG chat process</title><desc id="rag-desc">A user question is classified for safety, retrieves published knowledge, generates a draft, validates citations and returns either a grounded answer or an escalation.</desc>
+      <defs><marker id="arrow-rag" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#52634b"/></marker><marker id="arrow-rag-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3b6d11"/></marker></defs>
+      <path d="M214 270 H304 M454 270 H544 M694 270 H784 M934 270 H1024" class="edge" marker-end="url(#arrow-rag)"/><path d="M860 330 V410 H620" class="edge dash" marker-end="url(#arrow-rag)"/><path d="M1100 330 V410 H1160" stroke="#a32d2d" stroke-width="1.8" fill="none" marker-end="url(#arrow-rag)"/>
+      <rect class="box" x="64" y="220" width="150" height="100"/><text class="tag" x="139" y="246">INPUT</text><text class="node" x="139" y="280">Question</text><text class="sub" x="139" y="302">domain required</text>
+      <rect class="focus" x="304" y="220" width="150" height="100"/><text class="tag" x="379" y="246">POLICY</text><text class="node" x="379" y="280">Pre-safety</text><text class="sub" x="379" y="302">urgent / caution</text>
+      <rect class="store" x="544" y="220" width="150" height="100"/><text class="tag" x="619" y="246">EVIDENCE</text><text class="node" x="619" y="280">Retrieval</text><text class="sub" x="619" y="302">published only</text>
+      <rect class="box" x="784" y="220" width="150" height="100"/><text class="tag" x="859" y="246">DRAFT</text><text class="node" x="859" y="280">Generation</text><text class="sub" x="859" y="302">timeout bounded</text>
+      <rect class="focus" x="1024" y="220" width="150" height="100"/><text class="tag" x="1099" y="246">GATE</text><text class="node" x="1099" y="280">Post-check</text><text class="sub" x="1099" y="302">citations + policy</text>
+      <rect class="external" x="470" y="410" width="150" height="90"/><text class="node" x="545" y="447">Insufficient</text><text class="sub" x="545" y="470">say so clearly</text>
+      <rect class="danger" x="1090" y="410" width="150" height="90"/><text class="node" x="1165" y="447">Escalate</text><text class="sub" x="1165" y="470">urgent / unsafe</text>
+      <rect x="954" y="252" width="26" height="16" rx="2" fill="#eef5e8" stroke="#3b6d11"/><text class="tag" x="967" y="263" fill="#3b6d11">GO</text>
+      <line class="legend-line" x1="40" y1="530" x2="1240" y2="530"/><text class="legend" x="40" y="556" fill="#52634b">RULE</text><text class="sub" x="360" y="556">No evidence → no generated diagnosis; return a limitation and a safe next step.</text>
+    </svg>
+  </section>
+
+  <section>
+    <div class="head"><div><div class="eyebrow">04 · data flow</div><h2>Offline outbox and idempotent sync</h2></div><p>The device retains the user’s work first; the API event ledger makes retries safe and returns conflicts explicitly.</p></div>
+    <svg viewBox="0 0 1280 580" role="img" aria-labelledby="sync-title sync-desc">
+      <title id="sync-title">Offline synchronization data flow</title><desc id="sync-desc">Flutter writes changes to a local outbox, flushes batches to FastAPI, which checks an idempotent event ledger and returns applied, duplicate or conflict results.</desc>
+      <defs><marker id="arrow-sync" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1665b5"/></marker><marker id="arrow-sync-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3b6d11"/></marker></defs>
+      <path d="M230 270 H330 M530 270 H630 M830 270 H930" stroke="#1665b5" stroke-width="1.8" fill="none" marker-end="url(#arrow-sync)"/><path d="M1030 330 V410 H780" stroke="#3b6d11" stroke-width="2" fill="none" marker-end="url(#arrow-sync-green)"/><path d="M780 460 H430" stroke="#3b6d11" stroke-width="2" fill="none" marker-end="url(#arrow-sync-green)"/>
+      <rect class="box" x="70" y="220" width="160" height="100"/><text class="tag" x="150" y="246">CLIENT WRITE</text><text class="node" x="150" y="280">Journal / chat</text><text class="sub" x="150" y="302">offline allowed</text>
+      <rect class="store" x="330" y="220" width="200" height="100"/><text class="tag" x="430" y="246">DEVICE DATABASE</text><text class="node" x="430" y="280">Outbox event</text><text class="sub" x="430" y="302">event_id · payload · retry</text>
+      <rect class="focus" x="630" y="220" width="200" height="100"/><text class="tag" x="730" y="246">BATCH ≤ 50</text><text class="node" x="730" y="280">POST /sync/batch</text><text class="sub" x="730" y="302">authenticated request</text>
+      <rect class="store" x="930" y="220" width="200" height="100"/><text class="tag" x="1030" y="246">SERVER LEDGER</text><text class="node" x="1030" y="280">Sync event ledger</text><text class="sub" x="1030" y="302">hash + user + event_id</text>
+      <rect class="external" x="630" y="410" width="150" height="90"/><text class="node" x="705" y="447">Result set</text><text class="sub" x="705" y="470">applied / duplicate</text>
+      <rect class="danger" x="280" y="410" width="150" height="90"/><text class="node" x="355" y="447">Conflict UI</text><text class="sub" x="355" y="470">never overwrite</text>
+      <rect x="544" y="245" width="120" height="18" fill="#fff"/><text class="label label-blue" x="604" y="258">connectivity</text><rect x="835" y="385" width="112" height="18" fill="#fff"/><text class="label" x="891" y="398">per-event result</text>
+      <line class="legend-line" x1="40" y1="530" x2="1240" y2="530"/><text class="legend" x="40" y="556" fill="#52634b">RETRY</text><text class="sub" x="385" y="556">Transient error: exponential backoff + jitter. Auth error: stop and re-authenticate.</text>
+    </svg>
+  </section>
+
+  <section>
+    <div class="head"><div><div class="eyebrow">05 · lifecycle state machine</div><h2>Reminder lifecycle and device reconciliation</h2></div><p>The server owns reminder state; a device notification is best-effort and is rescheduled after every sync or timezone change.</p></div>
+    <svg viewBox="0 0 1280 580" role="img" aria-labelledby="reminder-title reminder-desc">
+      <title id="reminder-title">Reminder lifecycle</title><desc id="reminder-desc">A reminder moves from pending to completed, snoozed or cancelled, while local notification scheduling is reconciled from server state.</desc>
+      <defs><marker id="arrow-state" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#52634b"/></marker><marker id="arrow-state-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3b6d11"/></marker></defs>
+      <circle cx="100" cy="280" r="8" fill="#1f3310"/><path d="M108 280 H220" class="edge" marker-end="url(#arrow-state)"/><path d="M420 280 H540" class="accent" marker-end="url(#arrow-state-green)"/><path d="M620 330 V410 H420" class="edge" marker-end="url(#arrow-state)"/><path d="M340 410 V330" class="edge" marker-end="url(#arrow-state)"/><path d="M620 280 H780" class="edge" marker-end="url(#arrow-state)"/><path d="M930 280 H1040" class="edge" marker-end="url(#arrow-state)"/>
+      <rect class="focus" x="220" y="230" width="200" height="100"/><text class="tag" x="320" y="256">SERVER STATE</text><text class="node" x="320" y="290">Pending</text><text class="sub" x="320" y="312">due time + timezone</text>
+      <rect class="external" x="540" y="230" width="180" height="100"/><text class="tag" x="630" y="256">DEVICE</text><text class="node" x="630" y="290">Notification</text><text class="sub" x="630" y="312">best-effort</text>
+      <rect class="store" x="220" y="410" width="200" height="90"/><text class="node" x="320" y="447">Snoozed</text><text class="sub" x="320" y="470">next due time</text>
+      <rect class="box" x="780" y="230" width="150" height="100"/><text class="node" x="855" y="290">Completed</text><text class="sub" x="855" y="312">recorded once</text>
+      <rect class="danger" x="1040" y="230" width="150" height="100"/><text class="node" x="1115" y="290">Cancelled</text><text class="sub" x="1115" y="312">remove schedule</text>
+      <rect x="430" y="255" width="104" height="18" fill="#fff"/><text class="label" x="482" y="268">schedule</text><rect x="700" y="255" width="75" height="18" fill="#fff"/><text class="label" x="737" y="268">complete</text><rect x="936" y="255" width="96" height="18" fill="#fff"/><text class="label" x="984" y="268">cancel</text><rect x="440" y="385" width="100" height="18" fill="#fff"/><text class="label" x="490" y="398">snooze</text>
+      <rect class="callout" x="690" y="420" width="300" height="54"/><text class="callout-text" x="840" y="447">Sync / app start / timezone change</text><text class="sub" x="840" y="467">reconcile device schedule from server state</text>
+      <line class="legend-line" x1="40" y1="530" x2="1240" y2="530"/><text class="legend" x="40" y="556" fill="#52634b">CONTROL</text><text class="sub" x="395" y="556">Permission denial must not delete the reminder; show its in-app due state instead.</text>
+    </svg>
+  </section>
+  <footer>Source: <code>docs/technical-solution-feature-modules.md</code>, current FastAPI routes and Flutter client structure. Brand tokens: <code>docs/brand-guidelines.md</code>.</footer>
+</main>
+</body>
+</html>

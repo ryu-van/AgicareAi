@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -95,7 +96,7 @@ class CitationChip extends StatelessWidget {
     label: 'Nguồn tham khảo: $label',
     child: Chip(
       avatar: const Icon(
-        Icons.menu_book_outlined,
+        LucideIcons.bookOpen,
         size: 16,
         color: AppColors.info,
       ),

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -164,8 +165,16 @@ class _KnowledgePageState extends State<KnowledgePage> {
   }
 
   @override
-  Widget build(BuildContext context) => ListView(
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+  Widget build(BuildContext context) {
+    final canPop = Navigator.of(context).canPop();
+    return Scaffold(
+      appBar: canPop
+          ? AppBar(
+              title: const Text('Sổ tay Nông nghiệp'),
+            )
+          : null,
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
     children: [
       Row(
         children: [
@@ -277,7 +286,7 @@ class _KnowledgePageState extends State<KnowledgePage> {
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        const Icon(Icons.chevron_right_rounded),
+                        const Icon(LucideIcons.chevronRight, size: 18),
                       ],
                     ),
                   ),
@@ -287,7 +296,9 @@ class _KnowledgePageState extends State<KnowledgePage> {
         ),
       ),
     ],
-  );
+  ),
+);
+  }
 }
 
 class _TaggedArticle {

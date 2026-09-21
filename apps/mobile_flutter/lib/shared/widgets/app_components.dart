@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/theme/app_theme.dart';
 export 'app_brand_logo.dart';
@@ -213,27 +214,27 @@ class StatusChip extends StatelessWidget {
       StatusTone.info => (
         AppColors.infoSurface,
         AppColors.info,
-        Icons.info_outline,
+        LucideIcons.info,
       ),
       StatusTone.warning => (
         AppColors.warningSurface,
         AppColors.warning,
-        Icons.warning_amber_rounded,
+        LucideIcons.alertTriangle,
       ),
       StatusTone.success => (
         AppColors.successSurface,
         AppColors.success,
-        Icons.check_circle_outline,
+        LucideIcons.checkCircle2,
       ),
       StatusTone.danger => (
         const Color(0xFFFBE7E6),
         AppColors.danger,
-        Icons.error_outline,
+        LucideIcons.alertCircle,
       ),
       StatusTone.neutral => (
         AppColors.surfaceAlt,
         AppColors.mutedForeground,
-        Icons.circle_outlined,
+        LucideIcons.circle,
       ),
     };
 
@@ -296,37 +297,40 @@ class AppSearchField extends StatelessWidget {
   final VoidCallback? onClear;
 
   @override
-  Widget build(BuildContext context) => Container(
-    decoration: BoxDecoration(
-      color: AppColors.surfaceAlt,
-      borderRadius: BorderRadius.circular(AppRadii.lg),
-      boxShadow: [
-        BoxShadow(
-          color: AppColors.shadowDark.withValues(alpha: 0.3),
-          offset: const Offset(2, 2),
-          blurRadius: 6,
+  Widget build(BuildContext context) => Material(
+    color: Colors.transparent,
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadii.lg),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowDark.withValues(alpha: 0.3),
+            offset: const Offset(2, 2),
+            blurRadius: 6,
+          ),
+          BoxShadow(
+            color: AppColors.shadowLight.withValues(alpha: 0.9),
+            offset: const Offset(-2, -2),
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: const Icon(LucideIcons.search, size: 20),
+          suffixIcon: controller.text.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: onClear,
+                  tooltip: 'Xóa tìm kiếm',
+                  icon: const Icon(LucideIcons.x, size: 18),
+                ),
         ),
-        BoxShadow(
-          color: AppColors.shadowLight.withValues(alpha: 0.9),
-          offset: const Offset(-2, -2),
-          blurRadius: 6,
-        ),
-      ],
-    ),
-    child: TextField(
-      controller: controller,
-      onChanged: onChanged,
-      textInputAction: TextInputAction.search,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: controller.text.isEmpty
-            ? null
-            : IconButton(
-                onPressed: onClear,
-                tooltip: 'Xóa tìm kiếm',
-                icon: const Icon(Icons.clear_rounded),
-              ),
       ),
     ),
   );
@@ -410,14 +414,14 @@ class AsyncStateView extends StatelessWidget {
     AsyncState.content => child,
     AsyncState.loading => const AppSkeletonList(),
     AsyncState.empty => _StateMessage(
-      icon: Icons.inbox_outlined,
+      icon: LucideIcons.inbox,
       title: emptyTitle,
       message: emptyMessage,
       action: onRetry,
       actionLabel: onRetry == null ? null : 'Tải lại',
     ),
     AsyncState.error => _StateMessage(
-      icon: Icons.cloud_off_outlined,
+      icon: LucideIcons.cloudOff,
       title: 'Không thể tải dữ liệu',
       message: errorMessage,
       action: onRetry,
@@ -467,7 +471,7 @@ class _StateMessage extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             OutlinedButton.icon(
               onPressed: action,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(LucideIcons.refreshCw, size: 16),
               label: Text(actionLabel!),
             ),
           ],
@@ -612,26 +616,26 @@ class AppFloatingCenterNavShell extends StatelessWidget {
 
     final navItems = const [
       (
-        icon: Icons.home_outlined,
-        selectedIcon: Icons.home_rounded,
+        icon: LucideIcons.home,
+        selectedIcon: LucideIcons.home,
         label: 'Trang chủ',
         index: 0,
       ),
       (
-        icon: Icons.menu_book_outlined,
-        selectedIcon: Icons.menu_book_rounded,
+        icon: LucideIcons.bookOpen,
+        selectedIcon: LucideIcons.bookOpen,
         label: 'Kiến thức',
         index: 1,
       ),
       (
-        icon: Icons.chat_bubble_outline_rounded,
-        selectedIcon: Icons.chat_bubble_rounded,
+        icon: LucideIcons.messageSquare,
+        selectedIcon: LucideIcons.messageSquare,
         label: 'Hỏi AI',
         index: 2,
       ),
       (
-        icon: Icons.person_outline_rounded,
-        selectedIcon: Icons.person_rounded,
+        icon: LucideIcons.user,
+        selectedIcon: LucideIcons.user,
         label: 'Hồ sơ',
         index: 3,
       ),
@@ -751,9 +755,9 @@ class AppFloatingCenterNavShell extends StatelessWidget {
                             ],
                           ),
                           child: const Icon(
-                            Icons.camera_alt_rounded,
+                            LucideIcons.camera,
                             color: Colors.white,
-                            size: 24,
+                            size: 22,
                           ),
                         ),
                         const SizedBox(height: 2),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/network/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -111,8 +112,9 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {},
                   tooltip: 'Thông báo',
                   icon: const Icon(
-                    Icons.notifications_none_rounded,
+                    LucideIcons.bell,
                     color: AppColors.foreground,
+                    size: 20,
                   ),
                 ),
               ),
@@ -134,7 +136,7 @@ class _HomePageState extends State<HomePage> {
             childAspectRatio: 1.35,
             children: [
               FeatureCard(
-                icon: Icons.camera_alt_outlined,
+                icon: LucideIcons.scanLine,
                 title: 'Chẩn đoán',
                 subtitle: 'Phân tích hình ảnh',
                 status: 'Sắp có',
@@ -144,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: _startChat,
               ),
               FeatureCard(
-                icon: Icons.chat_bubble_outline_rounded,
+                icon: LucideIcons.messageSquare,
                 title: 'Hỏi AI',
                 subtitle: 'Nhận tư vấn nhanh',
                 status: 'Sắp có',
@@ -154,7 +156,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: _startChat,
               ),
               FeatureCard(
-                icon: Icons.menu_book_outlined,
+                icon: LucideIcons.bookOpen,
                 title: 'Sổ tay Nông nghiệp',
                 subtitle: 'Tra cứu dịch hại',
                 status: 'Khuyên dùng',
@@ -168,7 +170,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const FeatureCard(
-                icon: Icons.wb_sunny_outlined,
+                icon: LucideIcons.sun,
                 title: 'Dự báo Mùa vụ',
                 subtitle: 'Thời tiết & Cảnh báo',
                 status: 'Trực tuyến',
@@ -192,7 +194,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  Icons.lightbulb_rounded,
+                  LucideIcons.lightbulb,
                   color: AppColors.harvestGoldDark,
                   size: 24,
                 ),
@@ -320,9 +322,9 @@ class _ConsultationHeroCard extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.chat_bubble_outline_rounded,
+                LucideIcons.messageSquare,
                 color: AppColors.harvestGoldDark,
-                size: 22,
+                size: 20,
               ),
             ),
             const SizedBox(width: 12),
@@ -374,7 +376,7 @@ class _ConsultationHeroCard extends StatelessWidget {
                   ),
                   SizedBox(width: 4),
                   Icon(
-                    Icons.arrow_forward_rounded,
+                    LucideIcons.arrowRight,
                     color: Colors.white,
                     size: 14,
                   ),
@@ -489,9 +491,9 @@ class _FarmIcon extends StatelessWidget {
       ),
     ),
     child: const Icon(
-      Icons.agriculture_rounded,
+      LucideIcons.sprout,
       color: AppColors.harvestGoldDark,
-      size: 30,
+      size: 26,
     ),
   );
 }
@@ -544,7 +546,8 @@ class _ArticleCard extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         const Icon(
-          Icons.chevron_right_rounded,
+          LucideIcons.chevronRight,
+          size: 18,
           color: AppColors.mutedForeground,
         ),
       ],

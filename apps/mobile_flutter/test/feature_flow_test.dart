@@ -106,6 +106,24 @@ void main() {
     expect(find.text('Nội dung bài viết kiểm thử'), findsOneWidget);
   });
 
+  testWidgets('home handbook card opens knowledge page with search field', (
+    tester,
+  ) async {
+    final apiClient = _apiClient();
+    addTearDown(apiClient.dispose);
+    await tester.pumpWidget(AgriCareApp(apiClient: apiClient));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView).first, const Offset(0, -450));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sổ tay Nông nghiệp'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tìm kiếm kiến thức'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('home to knowledge to article flow', (tester) async {
     final apiClient = _apiClient();
     addTearDown(apiClient.dispose);
