@@ -314,6 +314,195 @@ def test_chat_message_returns_grounded_citation_for_matching_knowledge(client):
     assert "không phải chẩn đoán xác định" in body["answer"]
 
 
+def test_emergency_disease_pre_guardrail_blocks_treatment(client):
+    test_client, _, _ = client
+    session_response = test_client.post(
+        "/v1/chat/sessions",
+        headers={"Idempotency-Key": "asf-session-key-000001"},
+        json={"domain": "animal", "subject_id": "chicken"},
+    )
+    assert session_response.status_code == 201
+    session_id = session_response.json()["id"]
+
+    response = test_client.post(
+        f"/v1/chat/sessions/{session_id}/messages",
+        headers={"Idempotency-Key": "asf-message-key-000001"},
+        json={"content": "Đàn heo sốt cao xuất huyết, nghi nhiễm dịch tả lợn châu phi ASF thì dùng thuốc gì?"},
+    )
+
+    assert response.status_code == 202
+    body = response.json()
+    assert body["safety_level"] == "urgent"
+    assert body["needs_expert"] is True
+    assert "CẢNH BÁO NGUY CẤP" in body["answer"]
+    assert "Dịch tả lợn Châu Phi" in body["answer"]
+    assert "TUYỆT ĐỐI KHÔNG tự ý mua thuốc" in body["answer"]
+    assert body["citations"] == []
+
+
+def test_banned_substances_post_guardrail(client):
+    test_client, _, _ = client
+    from services.api.app.adapters.ai.provider import AIProviderAdapter
+
+    class MockBannedAIProvider(AIProviderAdapter):
+        def generate_completion(self, prompt, **kwargs):
+            return "Bạn có thể phun thuốc diệt cỏ chứa paraquat để làm sạch bờ ruộng."
+
+    from services.api.app.modules.chat import service as chat_svc
+
+    original_provider = chat_svc._ai_provider
+    chat_svc._ai_provider = MockBannedAIProvider()
+    try:
+        session_response = test_client.post(
+            "/v1/chat/sessions",
+            headers={"Idempotency-Key": "banned-session-key-001"},
+            json={"domain": "animal", "subject_id": "chicken"},
+        )
+        session_id = session_response.json()["id"]
+
+        response = test_client.post(
+            f"/v1/chat/sessions/{session_id}/messages",
+            headers={"Idempotency-Key": "banned-message-key-001"},
+            json={"content": "Fixture"},
+        )
+
+        assert response.status_code == 202
+        body = response.json()
+        assert "HOẠT CHẤT ĐÃ BỊ CẤM LƯU HÀNH" in body["answer"]
+        assert "paraquat" not in body["answer"].lower()
+
+    finally:
+        chat_svc._ai_provider = original_provider
+
+
+def test_gemini_api_client_payload_headers_and_rag_grounding():
+    import json
+    import httpx
+    from services.api.app.adapters.ai.provider import AIProviderAdapter
+
+    captured_requests = []
+
+    def mock_transport(request: httpx.Request) -> httpx.Response:
+        captured_requests.append(request)
+        body = json.loads(request.content.decode("utf-8"))
+        assert "x-goog-api-key" in request.headers
+        assert request.headers["x-goog-api-key"] == "test-api-key-12345"
+        # Verify RAG context articles were injected into prompt
+        user_content = body["contents"][0]["parts"][0]["text"]
+        assert "TÀI LIỆU CẨM NANG NÔNG NGHIỆP THAM KHẢO" in user_content
+        assert "Cách chăm sóc lúa" in user_content
+        assert "Lúa bị đạo ôn thì làm gì?" in user_content
+
+        response_data = {
+            "candidates": [
+                {
+                    "content": {
+                        "parts": [
+                            {
+                                "text": "Đánh giá sơ bộ: Lúa có dấu hiệu đạo ôn.\nBiện pháp: Giữ nước, bón phân cân đối.\nNguồn: Cẩm nang BVTV.\nĐây là thông tin tham khảo, không phải chẩn đoán xác định hay chỉ định thuốc."
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        return httpx.Response(200, json=response_data)
+
+    mock_client = httpx.Client(transport=httpx.MockTransport(mock_transport))
+    adapter = AIProviderAdapter(
+        api_key="test-api-key-12345",
+        client=mock_client,
+    )
+
+    result = adapter.generate_completion(
+        prompt="Lúa bị đạo ôn thì làm gì?",
+        system_instruction="Chỉ dựa vào cẩm nang.",
+        context_articles=[
+            {"title": "Cách chăm sóc lúa", "topic": "Kỹ thuật canh tác", "summary": "Ngưng bón đạm khi bị đạo ôn"}
+        ],
+    )
+
+    assert len(captured_requests) == 1
+    assert "Đánh giá sơ bộ: Lúa có dấu hiệu đạo ôn" in result
+    adapter.close()
+
+
+def test_gemini_api_client_error_fallback_to_grounded():
+    import httpx
+    from services.api.app.adapters.ai.provider import AIProviderAdapter
+
+    def error_transport(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, json={"error": "Internal Server Error"})
+
+    mock_client = httpx.Client(transport=httpx.MockTransport(error_transport))
+    adapter = AIProviderAdapter(
+        api_key="test-key-500",
+        client=mock_client,
+    )
+
+    # Should fallback gracefully to grounded fallback
+    result = adapter.generate_completion(
+        prompt="Lúa vàng lá",
+        context_articles=[
+            {"title": "Cẩm nang lúa", "summary": "Bón phân đúng thời điểm"}
+        ],
+    )
+    assert "Theo nguồn kiến thức nội bộ 'Cẩm nang lúa'" in result
+    assert "không phải chẩn đoán xác định" in result
+    adapter.close()
+
+
+def test_pre_guardrail_does_not_false_alarm_on_substrings(client):
+    test_client, _, _ = client
+    session_response = test_client.post(
+        "/v1/chat/sessions",
+        headers={"Idempotency-Key": "asphalt-session-001"},
+        json={"domain": "animal", "subject_id": "chicken"},
+    )
+    session_id = session_response.json()["id"]
+
+    # "asphalt" contains "asf" as substring, but is NOT the disease acronym
+    response = test_client.post(
+        f"/v1/chat/sessions/{session_id}/messages",
+        headers={"Idempotency-Key": "asphalt-msg-0000001"},
+        json={"content": "Đường vào trang trại đổ nhựa asphalt thì có ảnh hưởng đàn gà không?"},
+    )
+
+    assert response.status_code == 202
+    body = response.json()
+    assert "CẢNH BÁO NGUY CẤP" not in body["answer"]
+    assert "Dịch tả lợn Châu Phi" not in body["answer"]
+
+
+def test_pre_guardrail_plant_emergency_disease(client):
+    test_client, _, _ = client
+    session_response = test_client.post(
+        "/v1/chat/sessions",
+        headers={"Idempotency-Key": "plant-emer-session-1"},
+        json={"domain": "plant"},
+    )
+    assert session_response.status_code == 201
+    session_id = session_response.json()["id"]
+
+
+    response = test_client.post(
+        f"/v1/chat/sessions/{session_id}/messages",
+        headers={"Idempotency-Key": "plant-emer-msg-00001"},
+        json={"content": "Ruộng sắn bị khảm lá sắn xoăn ngọn hàng loạt thì xử lý sao?"},
+    )
+
+    assert response.status_code == 202
+    body = response.json()
+    assert body["safety_level"] == "urgent"
+    assert "CẢNH BÁO NGUY CẤP" in body["answer"]
+    assert "Chi cục Trồng trọt & Bảo vệ Thực vật" in body["answer"]
+    assert body["citations"] == []
+
+
+
+
+
+
 def test_farm_diagnosis_and_reminders_endpoints(client):
     test_client, _, _ = client
 

@@ -14,16 +14,17 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Thước đo tiến độ tổng thể (Progress Metrics)
 ```text
-[████████████████░░░░░░░░] 68% Hoàn thành phạm vi MVP cốt lõi
+[█████████████████░░░░░░░] 75% Hoàn thành phạm vi MVP cốt lõi
 
-- Backend FastAPI:          [██████████████████░░] 90% (14/14 tests passed, GET & Batch Sync Journal)
+- Backend FastAPI:          [███████████████████░] 95% (20/20 tests passed, Gemini API & 5-tier Guardrails)
 - Mobile Flutter (Android):   [█████████████████░░░] 85% (44/44 tests passed, 0 analyze issues)
 - Dữ liệu & Schema:         [████████████████░░░░] 85% (Schema + Migration + Seeds + Local Store)
 - Nhận diện thương hiệu & UI: [████████████████████] 100% (AgriAn + Logo Khiên + Lucide Icons)
 - Xác thực & Phân quyền (Auth): [███░░░░░░░░░░░░░░░░░] 15% (Chỉ có Dev Auth cục bộ, CHƯA có Login/Register/JWT)
 - Offline & Local DB:       [█████████████████░░░] 85% (Local Store + Transactional Outbox + SyncEngine)
-- AI & RAG thực tế:         [██████░░░░░░░░░░░░░░] 30% (Rule-based & fixture search xong, chưa gắn LLM)
+- AI & RAG thực tế:         [████████████████░░░░] 80% (Gemini 1.5 Flash Adapter + Pre/Post Guardrails + Grounding)
 ```
+
 
 
 ---
@@ -105,14 +106,16 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 - [x] **Kiểm thử:** 100% test flow xem bài viết, mở từ Dashboard, tìm kiếm theo từ khóa.
 - [ ] *Còn lại:* Lưu bài viết vào bookmark/offline cache trên máy.
 
-#### 🟡 F3: Trợ lý AI an toàn có trích dẫn (Safe Chatbot with Citations) — `Hoàn thành 85%`
-- [x] **Kiến trúc & Quyết định kỹ thuật:** Đã phê duyệt [ADR-003: Kiến trúc AI Multimodal RAG](adr/ADR-003-ai-rag-multimodal-architecture.md) và [Đặc tả Kỹ thuật AI & RAG](ai-rag-technical-spec.md) (Gemini 1.5 Flash + pgvector Hybrid Search + 3-tier Safety Guardrails).
-- [x] **Backend Logic:** Endpoint `/v1/chat/sessions`, `/v1/chat/sessions/{id}/messages`.
-- [x] **Cơ chế an toàn (Safety Gate):** Phân cấp độ an toàn `normal` / `caution` / `urgent` dựa trên từ khóa nguy cấp (dịch bệnh, chết hàng loạt, thuốc độc hại).
-- [x] **Trích dẫn nguồn:** Tự động tìm kiếm bài viết kiến thức liên quan và gắn `citations` vào câu trả lời.
+#### 🟢 F3: Trợ lý AI an toàn có trích dẫn (Safe Chatbot with Citations) — `Hoàn thành 95%`
+- [x] **Kiến trúc & Quyết định kỹ thuật:** Đã phê duyệt [ADR-003: Kiến trúc AI Multimodal RAG](adr/ADR-003-ai-rag-multimodal-architecture.md) và [Đặc tả Kỹ thuật AI & RAG](ai-rag-technical-spec.md).
+- [x] **Backend Logic & AI Provider:** [`AIProviderAdapter`](services/api/app/adapters/ai/provider.py) tích hợp Google Gemini 1.5 Flash API qua header an toàn `x-goog-api-key`, RAG context injection và fallback grounded khi offline.
+- [x] **Pre-Guardrail Dịch bệnh Nhóm A:** Tự động phát hiện dịch bệnh nguy hiểm (ASF, H5N1, FMD, PRRS, Khảm lá sắn SLCMD...), chặn đơn thuốc, phát cảnh báo đỏ và hướng dẫn cách ly/liên hệ thú y, khuyến nông theo đúng domain trồng trọt/chăn nuôi.
+- [x] **Post-Guardrail Hóa chất cấm:** Bộ lọc regex tự động phát hiện và chặn/thay thế các hoạt chất độc hại cấm lưu hành (Paraquat, 2,4-D, Chlorpyrifos Ethyl...).
+- [x] **Trích dẫn nguồn & Disclaimer:** Tự động tìm kiếm cẩm nang kỹ thuật liên quan, gắn citations và đính kèm khuyến cáo pháp lý bắt buộc.
 - [x] **Mobile UI:** Màn hình `ChatPage`, khung soạn thảo tin nhắn nhiều dòng, bong bóng chat hiển thị nguồn trích dẫn và nút "Cần chuyên gia".
-- [x] **Kiểm thử:** Test phân loại an toàn, test retry khi mạng chậm, test deep link mở chat session.
-- [ ] *Còn lại:* Đấu nối LLM Provider thực tế (Gemini 1.5 Flash API) thông qua `AIProviderAdapter` và `RAGAdapter` (kết nối pgvector) theo đặc tả kỹ thuật.
+- [x] **Kiểm thử tự động:** 20/20 test cases FastAPI pass, bao gồm kiểm thử mock transport Gemini API, lỗi mạng fallback, chặn dịch bệnh nhóm A và khử hoạt chất cấm.
+- [ ] *Còn lại:* Mở rộng `pgvector` Hybrid search khi triển khai Supabase production cloud.
+
 
 ---
 
