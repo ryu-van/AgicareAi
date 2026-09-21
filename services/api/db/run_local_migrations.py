@@ -12,6 +12,7 @@ MIGRATIONS = (
     "001_initial_schema.sql",
     "002_local_compat.sql",
     "003_mvp1_knowledge_seed.sql",
+    "004_user_credentials.sql",
 )
 
 

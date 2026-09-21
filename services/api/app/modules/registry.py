@@ -7,6 +7,7 @@ and making future extraction or feature flags localized to this file.
 
 from fastapi import APIRouter
 
+from services.api.app.modules.auth.router import router as auth_router
 from services.api.app.modules.chat.router import router as chat_router
 from services.api.app.modules.diagnosis.router import router as diagnosis_router
 from services.api.app.modules.domains.router import router as domains_router
@@ -21,6 +22,7 @@ from services.api.app.modules.sync.router import router as sync_router
 def api_routers() -> tuple[APIRouter, ...]:
     """Return the stable set of HTTP feature routers in API order."""
     return (
+        auth_router,
         domains_router,
         identity_router,
         farm_router,
@@ -31,4 +33,5 @@ def api_routers() -> tuple[APIRouter, ...]:
         reminders_router,
         sync_router,
     )
+
 

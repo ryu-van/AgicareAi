@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:agricare_ai_mobile/app.dart';
+import 'package:agricare_ai_mobile/core/database/in_memory_store.dart';
 import 'package:agricare_ai_mobile/core/network/api_client.dart';
+import 'package:agricare_ai_mobile/core/repositories/journal_repository.dart';
 import 'package:agricare_ai_mobile/features/diagnosis/diagnosis_page.dart';
 import 'package:agricare_ai_mobile/features/farm/farm_page.dart';
 import 'package:agricare_ai_mobile/features/journal/journal_page.dart';
@@ -19,9 +21,13 @@ void main() {
     expect(find.text('Trang trại AgriCare Demo'), findsOneWidget);
   });
 
-  testWidgets('renders diagnosis feature page and performs analysis flow', (tester) async {
+  testWidgets('renders diagnosis feature page and performs analysis flow', (
+    tester,
+  ) async {
     final apiClient = ApiClient(baseUrl: 'http://test', userId: 'user-1');
-    await tester.pumpWidget(MaterialApp(home: DiagnosisPage(apiClient: apiClient)));
+    await tester.pumpWidget(
+      MaterialApp(home: DiagnosisPage(apiClient: apiClient)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Chẩn đoán Sâu bệnh'), findsOneWidget);
@@ -35,7 +41,14 @@ void main() {
 
   testWidgets('renders journal feature page', (tester) async {
     final apiClient = ApiClient(baseUrl: 'http://test', userId: 'user-1');
-    await tester.pumpWidget(MaterialApp(home: JournalPage(apiClient: apiClient)));
+    final repository = ApiJournalRepository(
+      apiClient: apiClient,
+      localStore: InMemoryJournalStore(),
+      outboxStore: InMemoryOutboxStore(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(home: JournalPage(repository: repository)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Nhật ký Sản xuất'), findsOneWidget);
@@ -44,7 +57,9 @@ void main() {
 
   testWidgets('renders reminders feature page', (tester) async {
     final apiClient = ApiClient(baseUrl: 'http://test', userId: 'user-1');
-    await tester.pumpWidget(MaterialApp(home: RemindersPage(apiClient: apiClient)));
+    await tester.pumpWidget(
+      MaterialApp(home: RemindersPage(apiClient: apiClient)),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Nhắc nhở Canh tác'), findsOneWidget);
@@ -63,9 +78,16 @@ void main() {
     expect(find.text('Đồng bộ hoàn tất thành công!'), findsOneWidget);
   });
 
-  testWidgets('supports navigation deep-links for new feature routes', (tester) async {
+  testWidgets('supports navigation deep-links for new feature routes', (
+    tester,
+  ) async {
     final apiClient = ApiClient(baseUrl: 'http://test', userId: 'user-1');
-    await tester.pumpWidget(AgriCareApp(apiClient: apiClient, initialRoute: 'agricare-ai://diagnosis'));
+    await tester.pumpWidget(
+      AgriCareApp(
+        apiClient: apiClient,
+        initialRoute: 'agricare-ai://diagnosis',
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Chẩn đoán Sâu bệnh'), findsOneWidget);

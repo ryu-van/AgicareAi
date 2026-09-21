@@ -1,4 +1,4 @@
-import '../database/in_memory_store.dart';
+import '../database/drift_store.dart';
 import '../database/local_store_interface.dart';
 import '../models/journal_entry_entity.dart';
 import '../network/api_client.dart';
@@ -35,8 +35,10 @@ class ApiJournalRepository implements JournalRepository {
     required this.apiClient,
     JournalLocalStore? localStore,
     OutboxQueueStore? outboxStore,
-  })  : localStore = localStore ?? InMemoryJournalStore(),
-        outboxStore = outboxStore ?? InMemoryOutboxStore() {
+  }) : localStore =
+           localStore ?? DriftJournalStore(OfflineDatabaseProvider.instance),
+       outboxStore =
+           outboxStore ?? DriftOutboxStore(OfflineDatabaseProvider.instance) {
     syncEngine = SyncEngine(
       apiClient: apiClient,
       localStore: this.localStore,
@@ -162,7 +164,8 @@ class ApiJournalRepository implements JournalRepository {
     if (existing == null) return null;
 
     final now = DateTime.now().toUtc();
-    final newClientEventId = 'evt-${now.microsecondsSinceEpoch}-${++_idCounter}';
+    final newClientEventId =
+        'evt-${now.microsecondsSinceEpoch}-${++_idCounter}';
     final updated = existing.copyWith(
       clientEventId: newClientEventId,
       title: title?.trim().isNotEmpty == true ? title!.trim() : existing.title,
@@ -235,4 +238,3 @@ class ApiJournalRepository implements JournalRepository {
     return syncEngine.syncNow();
   }
 }
-

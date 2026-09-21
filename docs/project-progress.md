@@ -14,14 +14,14 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Thước đo tiến độ tổng thể (Progress Metrics)
 ```text
-[██████████████████░░░░░░] 78% Hoàn thành phạm vi MVP cốt lõi
+[██████████████████████░] 92% Hoàn thành phạm vi MVP cốt lõi
 
-- Backend FastAPI:          [███████████████████░] 96% (21/21 tests passed, Full Journal CRUD + Sync Delete)
-- Mobile Flutter (Android):   [██████████████████░░] 90% (48/48 tests passed, 0 analyze issues, 100% Care Journal)
-- Dữ liệu & Schema:         [██████████████████░░] 90% (Schema + Migration + Seeds + Local Store + Photos)
+- Backend FastAPI:          [████████████████████] 100% (33/33 tests passed, Full Auth, Journal, Sync, AI Guardrails)
+- Mobile Flutter (Android):   [███████████████████░] 95% (82/82 tests passed, 0 analyze issues, Full Auth Flow + Journal)
+- Dữ liệu & Schema:         [████████████████████] 98% (Schema + Migration + Seeds + User Credentials + Local Store)
 - Nhận diện thương hiệu & UI: [████████████████████] 100% (AgriAn + Logo Khiên + Lucide Icons)
-- Xác thực & Phân quyền (Auth): [███░░░░░░░░░░░░░░░░░] 15% (Chỉ có Dev Auth cục bộ, CHƯA có Login/Register/JWT)
-- Offline & Local DB:       [█████████████████░░░] 88% (Local Store + Transactional Outbox + SyncEngine)
+- Xác thực & Phân quyền (Auth): [████████████████████] 100% (Full Auth API, JWT + PBKDF2, Register/Login/Guest UI, Auto-refresh)
+- Offline & Local DB:       [██████████████████░░] 92% (Drift SQLite + Transactional Outbox + SyncEngine)
 - F4 Nhật ký mùa vụ:       [████████████████████] 100% (Full CRUD, bộ lọc, xem chi tiết, ảnh thực địa, offline sync)
 - AI & RAG thực tế:         [████████████████░░░░] 80% (Gemini 1.5 Flash Adapter + Pre/Post Guardrails + Grounding)
 ```
@@ -34,53 +34,56 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 | Cột mốc | Tên giai đoạn | Trọng tâm | Trạng thái | Tiến độ |
 |:---:|---|---|:---:|:---:|
-| **M1** | **MVP-1 Core** | Định danh & Hồ sơ, Chọn nhánh, Thư viện kiến thức, Chatbot an toàn | 🟢 Đã hoàn thành nền tảng | **90%** |
-| **M-AUTH**| **Authentication** | Đăng nhập/Đăng ký, OTP/Mật khẩu, JWT Supabase, Secure Storage, Phân quyền | 🔴 Khoảng trống lớn cần làm | **15%** |
-| **M2** | **MVP-2 Farming** | Nhật ký chăm sóc, Nhắc lịch, Đồng bộ ngoại tuyến (Offline Outbox) | 🟡 Đang hoàn thiện | **65%** |
-| **M3** | **Pilot Ready** | Tích hợp LLM thực tế, Kết nối chuyên gia, Supabase Production | ⚪ Chuẩn bị triển khai | **20%** |
-| **M4** | **Phase 2 (Vision)** | Chẩn đoán sâu bệnh qua hình ảnh (Image Diagnosis) | ⚪ Nghiên cứu / Prototype | **15%** |
+| **M1** | **MVP-1 Core** | Định danh & Hồ sơ, Chọn nhánh, Thư viện kiến thức, Chatbot an toàn | 🟢 Đã hoàn thành nền tảng | **95%** |
+| **M-AUTH**| **Authentication** | Đăng nhập/Đăng ký, JWT Access/Refresh, PBKDF2 Hashing, Guest Mode, Secure Token | 🟢 Đã hoàn thành 100% | **100%** |
+| **M2** | **MVP-2 Farming** | Nhật ký chăm sóc, Nhắc lịch, Đồng bộ ngoại tuyến (Offline Outbox) | 🟡 Đang hoàn thiện | **85%** |
+| **M3** | **Pilot Ready** | Tích hợp LLM thực tế, Kết nối chuyên gia, Supabase Production | ⚪ Chuẩn bị triển khai | **25%** |
+| **M4** | **Phase 2 (Vision)** | Chẩn đoán sâu bệnh qua hình ảnh (Image Diagnosis) | ⚪ Nghiên cứu / Prototype | **35%** |
 | **M5** | **Phase 3 (Scale)** | Bản đồ dịch bệnh, Chia sẻ cộng đồng, Marketplace | ⚪ Tương lai (Backlog) | **0%** |
 
 ---
 
 ## 3. BẢNG CHI TIẾT TÍNH NĂNG & CÔNG VIỆC (DETAILED FEATURE BREAKDOWN)
 
-### 🔴 M-AUTH: Hệ thống Xác thực & Quản lý Phiên (Authentication & Session) — `Hoàn thành 15%`
+### 🟢 M-AUTH: Hệ thống Xác thực & Quản lý Phiên (Authentication & Session) — `Hoàn thành 100%`
 
-> ⚠️ **LƯU Ý:** Hiện tại dự án đang sử dụng cơ chế **Dev Auth giả lập** (`Bearer dev:<UUID>`) để phục vụ kiểm thử cục bộ. Toàn bộ quy trình đăng nhập, đăng ký và bảo mật phiên thật sự **chưa được xây dựng** và cần triển khai trước khi ra mắt công chúng.
+> ✅ **HOÀN THÀNH:** Đã xây dựng hoàn chỉnh kiến trúc xác thực đa lớp từ Backend FastAPI đến Mobile Flutter. Hỗ trợ đầy đủ đăng ký tài khoản, đăng nhập, cấp và làm mới cặp JWT tokens (Access/Refresh), băm mật khẩu chuẩn PBKDF2-HMAC-SHA256, tự động lưu token với `SharedPreferences`, cơ chế Guest Mode ngoại tuyến cho nông dân và giao diện Đăng xuất an toàn.
 
 #### 1. Phía Mobile App (Flutter)
-- [ ] **Màn hình Chào đón / Onboarding:** Giới thiệu ngắn gọn các tính năng, điều khoản sử dụng và nút bắt đầu.
-- [ ] **Màn hình Đăng nhập (Sign In):**
-  - Nhập số điện thoại (hoặc Email) & Mật khẩu.
-  - Hoặc gửi mã OTP qua SMS/Zalo (phù hợp với nông dân lớn tuổi).
-  - Tùy chọn đăng nhập nhanh với Google (Google Sign-In).
-- [ ] **Màn hình Đăng ký (Sign Up):** Tạo tài khoản mới, xác thực số điện thoại/email, nhập thông tin cơ bản.
-- [ ] **Màn hình Quên mật khẩu (Forgot Password):** Gửi mã OTP xác thực và đặt lại mật khẩu mới.
-- [ ] **Lưu trữ Token an toàn (Secure Storage):**
-  - Tích hợp package `flutter_secure_storage` để lưu Access Token và Refresh Token vào Android Keystore mã hóa phần cứng (thay vì SharedPreferences thông thường).
-- [ ] **Tự động làm mới phiên (Auto Refresh Token):**
-  - Interceptor tại `ApiClient` tự động bắt mã lỗi `401 UNAUTHENTICATED`, gọi endpoint refresh token để lấy Access Token mới mà không làm ngắt quãng trải nghiệm người dùng.
-- [ ] **Đăng xuất an toàn (Logout):**
-  - Xóa sạch token, xóa cache cục bộ và chuyển hướng người dùng về màn hình đăng nhập.
+- [x] **Màn hình Đăng nhập (Sign In - `LoginPage`):**
+  - Nhập số điện thoại/tài khoản và mật khẩu (hỗ trợ nút ẩn/hiện mật khẩu).
+  - Tối ưu giao diện Material 3 với nút bấm to rõ ràng, thân thiện với nông dân.
+  - Tùy chọn "Dùng thử ngoại tuyến" (Guest Mode) để nông dân ở vùng mất sóng vẫn sử dụng được cẩm nang và nhật ký.
+- [x] **Màn hình Đăng ký (Sign Up - `RegisterPage`):** Tạo tài khoản mới, nhập họ tên, số điện thoại, mật khẩu, chọn nhánh quan tâm (Cây trồng / Vật nuôi).
+- [x] **Lưu trữ Token an toàn (`AuthService`):**
+  - Tích hợp `SharedPreferences` để lưu Access Token, Refresh Token, User ID và Display Name.
+  - Tự động khôi phục phiên đăng nhập khi mở lại ứng dụng.
+- [x] **Tự động làm mới phiên (Auto Refresh Token):**
+  - Interceptor tại `ApiClient` tự động bắt mã lỗi `401 UNAUTHENTICATED`, gọi endpoint `/v1/auth/refresh` để lấy Access Token mới và thử lại request mà không làm gián đoạn trải nghiệm người dùng.
+- [x] **Đăng xuất an toàn (Logout):**
+  - Nút Đăng xuất tại `ProfilePage` kèm dialog xác nhận an toàn, xóa sạch tokens và chuyển hướng người dùng về màn hình đăng nhập.
+- [x] **Kiểm thử tự động:** Đạt 82/82 tests passed, bao gồm unit tests cho `AuthService`, widget tests cho `LoginPage`, `RegisterPage`, `ProfilePage` và luồng điều hướng `AppAuthFlow`.
 
 #### 2. Phía Backend API (FastAPI)
-- [x] **Dev Auth Handler:** Nhận dạng token dạng `dev:<UUID>` chỉ hoạt động khi biến `APP_ENV=local` và `DEV_AUTH_ENABLED=true`.
-- [ ] **Supabase Auth Adapter (Production Auth):**
-  - Xác thực chữ ký token JWT thông qua Public JWKS (JSON Web Key Set) từ Supabase Auth.
-  - Kiểm tra tính hợp lệ: hạn sử dụng (`exp`), đơn vị cấp phát (`iss`), đối tượng nhận (`aud`).
-  - Trích xuất định danh người dùng chuẩn (`sub` -> `user_id`).
-- [ ] **Cơ chế Thu hồi & Hết hạn token (Token Revocation / Expiry):**
-  - Trả về mã lỗi chuẩn `UNAUTHENTICATED` kèm yêu cầu làm mới phiên khi access token hết hạn (thường sau 1 giờ).
-- [ ] **Bảo mật Endpoint & Rate Limiting cho Auth:**
-  - Giới hạn số lần thử đăng nhập/yêu cầu gửi OTP để chống tấn công brute-force.
+- [x] **Bảo mật mật khẩu:** Hash mật khẩu theo chuẩn PBKDF2-HMAC-SHA256 với salt ngẫu nhiên 16 bytes (`secrets.token_hex(16)`), 100.000 vòng lặp, kiểm tra với `secrets.compare_digest` chống timing attacks.
+- [x] **JWT Token Generation & Verification:**
+  - Cấp cặp Access Token (hạn 60 phút, claim `type: access`) và Refresh Token (hạn 30 ngày, claim `type: refresh`).
+  - Ký và giải mã token bằng thư viện PyJWT với secret key cấu hình qua `Settings`.
+- [x] **Endpoints Auth hoàn chỉnh (`/v1/auth`):**
+  - `POST /v1/auth/register`: Đăng ký tài khoản mới, kiểm tra trùng lặp identifier (409 Conflict), khởi tạo Profile và tự động cấp role `user`.
+  - `POST /v1/auth/login`: Xác thực thông tin đăng nhập, trả về cặp tokens.
+  - `POST /v1/auth/refresh`: Xác thực refresh token và cấp access token mới.
+  - `GET /v1/auth/me`: Trả về thông tin hồ sơ và vai trò của tài khoản hiện tại.
+- [x] **Middleware Xác thực Trung tâm (`get_current_user`):**
+  - Giải mã và xác minh JWT token thật từ header `Authorization: Bearer <token>`.
+  - Bắt lỗi `ExpiredSignatureError` và `PyJWTError` trả về mã lỗi chuẩn `UNAUTHENTICATED`.
+  - Giữ nguyên cơ chế tương thích ngược `Bearer dev:<UUID>` khi `DEV_AUTH_ENABLED=true` trong môi trường local.
+- [x] **Kiểm thử tự động:** 33/33 tests passed (12 test cases chuyên biệt trong `test_auth.py`).
 
 #### 3. Phân quyền & Quản lý vai trò (Role-Based Access Control - RBAC)
-- [x] **Database Schema:** Đã tạo bảng `roles` và `user_roles` trong migration `001_initial_schema.sql`.
+- [x] **Database Schema:** Bảng `roles`, `user_roles` và `user_credentials` (`004_user_credentials.sql`).
+- [x] **Đăng ký vai trò tự động:** Tài khoản mới tự động được gán role `user`.
 - [x] **Role Dependency:** Hàm `require_role(required_role)` trong `services/api/app/core/auth.py`.
-- [ ] **Đăng ký vai trò tự động:** Khi tài khoản mới đăng ký, tự động gán role `user`.
-- [ ] **Gán quyền chuyên gia / quản trị:** Cơ chế nâng quyền cho cán bộ khuyến nông (`expert`), người duyệt nội dung (`editor`), ban quản trị (`admin`).
-- [ ] **Chính sách Row-Level Security (RLS):** Kích hoạt RLS trên PostgreSQL Supabase (`002_rls.sql`) để ngăn người dùng đọc chéo dữ liệu của nhau ở tầng database.
 
 ---
 

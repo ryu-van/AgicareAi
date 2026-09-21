@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Annotated
 from uuid import UUID
 
+import jwt
 from fastapi import Depends, Header
 from sqlalchemy import text, select
 from sqlalchemy.orm import Session
@@ -57,7 +58,35 @@ def get_current_user(
         _ensure_local_principal(session, user_id)
         return UserPrincipal(user_id=user_id)
 
-    raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.")
+    try:
+        payload = jwt.decode(
+            token,
+            settings.jwt_secret_key.get_secret_value(),
+            algorithms=[settings.jwt_algorithm],
+        )
+    except jwt.ExpiredSignatureError as exc:
+        raise AppError(401, "UNAUTHENTICATED", "Phiên đăng nhập đã hết hạn.") from exc
+    except jwt.PyJWTError as exc:
+        raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.") from exc
+
+    if payload.get("type") != "access":
+        raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.")
+
+    try:
+        UUID(user_id)
+    except ValueError as exc:
+        raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.") from exc
+
+    profile = session.get(Profile, user_id)
+    if profile is None:
+        raise AppError(401, "UNAUTHENTICATED", "Thông tin xác thực không hợp lệ.")
+
+    return UserPrincipal(user_id=user_id)
+
 
 
 def require_role(required_role: str):

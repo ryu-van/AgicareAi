@@ -9,8 +9,9 @@ def test_application_composes_all_feature_routers_from_the_registry():
         if getattr(route, "path", "").startswith("/v1")
     }
 
-    assert len(api_routers()) == 9
+    assert len(api_routers()) == 10
     assert {
+        "/v1/auth/login",
         "/v1/domains",
         "/v1/me",
         "/v1/farm/summary",

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import '../auth/auth_service.dart';
 import '../config/app_config.dart';
 import '../app_logger.dart';
 
@@ -70,6 +71,7 @@ class ApiClient {
     String? userId,
     bool? devAuthEnabled,
     this.authToken,
+    this.authService,
   }) : _client = client ?? http.Client(),
        _baseUrl = (baseUrl ?? AppConfig.apiBaseUrl).replaceFirst(
          RegExp(r'/$'),
@@ -83,17 +85,37 @@ class ApiClient {
   final String _userId;
   final bool _devAuthEnabled;
   final String? authToken;
+  final AuthService? authService;
+
+  String? get _effectiveToken => authToken ?? authService?.currentAccessToken;
 
   Map<String, String> get _headers => {
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    if (authToken != null) 'Authorization': 'Bearer $authToken',
-    if (authToken == null && _devAuthEnabled)
+    if (_effectiveToken != null) 'Authorization': 'Bearer $_effectiveToken',
+    if (_effectiveToken == null && _devAuthEnabled)
       'Authorization': 'Bearer dev:$_userId',
   };
 
+  Future<http.Response> _executeWithAuthRetry(
+    Future<http.Response> Function() requestFn,
+  ) async {
+    final response = await requestFn();
+    if (response.statusCode == 401 && authService != null) {
+      final newToken = await authService!.refreshToken();
+      if (newToken != null) {
+        final retryResponse = await requestFn();
+        if (retryResponse.statusCode == 401) {
+          await authService!.logout();
+        }
+        return retryResponse;
+      }
+    }
+    return response;
+  }
+
   Future<dynamic> _get(String path) async {
-    final response = await _getWithRetry(path);
+    final response = await _executeWithAuthRetry(() => _getWithRetry(path));
     final body = response.body.isEmpty ? null : jsonDecode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
       final message = body is Map && body['error'] is Map<String, dynamic>
@@ -233,40 +255,49 @@ class ApiClient {
     Map<String, dynamic> payload, {
     String? idempotencyKey,
   }) async {
-    final response = await _client
-        .post(
-          Uri.parse('$_baseUrl$path'),
-          headers: {
-            ..._headers,
-            'Idempotency-Key':
-                idempotencyKey ??
-                'flutter-${DateTime.now().microsecondsSinceEpoch}',
-          },
-          body: jsonEncode(payload),
-        )
-        .timeout(const Duration(seconds: 15));
+    final idempotency =
+        idempotencyKey ?? 'flutter-${DateTime.now().microsecondsSinceEpoch}';
+    final response = await _executeWithAuthRetry(() {
+      return _client
+          .post(
+            Uri.parse('$_baseUrl$path'),
+            headers: {
+              ..._headers,
+              'Idempotency-Key': idempotency,
+            },
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+    });
     final body = response.body.isEmpty ? null : jsonDecode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Không thể thực hiện yêu cầu lúc này.');
+      final message = body is Map && body['error'] is Map<String, dynamic>
+          ? (body['error'] as Map<String, dynamic>)['message'] as String?
+          : null;
+      throw Exception(message ?? 'Không thể thực hiện yêu cầu lúc này.');
     }
     return body as Map<String, dynamic>;
   }
-
 
   Future<Map<String, dynamic>> _patch(
     String path,
     Map<String, dynamic> payload,
   ) async {
-    final response = await _client
-        .patch(
-          Uri.parse('$_baseUrl$path'),
-          headers: _headers,
-          body: jsonEncode(payload),
-        )
-        .timeout(const Duration(seconds: 10));
+    final response = await _executeWithAuthRetry(() {
+      return _client
+          .patch(
+            Uri.parse('$_baseUrl$path'),
+            headers: _headers,
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 10));
+    });
     final body = response.body.isEmpty ? null : jsonDecode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Không thể lưu thông tin lúc này.');
+      final message = body is Map && body['error'] is Map<String, dynamic>
+          ? (body['error'] as Map<String, dynamic>)['message'] as String?
+          : null;
+      throw Exception(message ?? 'Không thể lưu thông tin lúc này.');
     }
     return body as Map<String, dynamic>;
   }

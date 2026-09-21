@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../core/network/api_client.dart';
+import '../../core/notifications/local_notification_service.dart';
 
 class RemindersPage extends StatefulWidget {
-  const RemindersPage({super.key, required this.apiClient});
+  const RemindersPage({
+    super.key,
+    required this.apiClient,
+    this.notificationScheduler,
+  });
   final ApiClient apiClient;
+  final NotificationScheduler? notificationScheduler;
 
   @override
   State<RemindersPage> createState() => _RemindersPageState();
 }
 
 class _RemindersPageState extends State<RemindersPage> {
+  NotificationScheduler get _notifications =>
+      widget.notificationScheduler ?? LocalNotificationService.instance;
   final List<Map<String, dynamic>> _reminders = [
     {
       'title': 'Tưới nước lúa vụ Đông Xuân',
@@ -31,7 +39,7 @@ class _RemindersPageState extends State<RemindersPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_alarm),
-            onPressed: () {},
+            onPressed: _createQuickReminder,
             tooltip: 'Tạo nhắc nhở',
           ),
         ],
@@ -55,5 +63,28 @@ class _RemindersPageState extends State<RemindersPage> {
         },
       ),
     );
+  }
+
+  Future<void> _createQuickReminder() async {
+    final dueAt = DateTime.now().add(const Duration(hours: 1));
+    final id = dueAt.millisecondsSinceEpoch.remainder(1 << 31);
+    final granted = await _notifications.requestPermission();
+    if (!mounted) return;
+    if (!granted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bạn chưa cấp quyền thông báo.')),
+      );
+      return;
+    }
+    await _notifications.scheduleReminder(
+      id: id,
+      title: 'Nhắc việc canh tác',
+      body: 'Đây là lời nhắc thử nghiệm sau 1 giờ.',
+      dueAt: dueAt,
+    );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Đã đặt lời nhắc sau 1 giờ.')));
   }
 }

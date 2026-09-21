@@ -28,9 +28,15 @@ void main() {
     expect(find.text('Hỏi AgriAn AI'), findsOneWidget);
   });
 
-  testWidgets('falls back to home for an invalid deep link', (tester) async {
+  testWidgets('shows 404 then returns home for an invalid deep link', (
+    tester,
+  ) async {
     await tester.pumpWidget(AgriCareApp(initialRoute: '/not-a-route'));
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+    expect(find.text('Không tìm thấy trang này'), findsOneWidget);
+
+    await tester.tap(find.text('Về trang chủ'));
+    await tester.pumpAndSettle();
     expect(find.text('AgriAn'), findsOneWidget);
     expect(find.byType(AppFloatingCenterNavShell), findsOneWidget);
   });
