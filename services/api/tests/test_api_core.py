@@ -286,6 +286,13 @@ def test_journal_idempotency_and_sync_conflict(client):
     assert conflicting.status_code == 200
     assert conflicting.json()["results"][0]["status"] == "conflict"
 
+    # Test GET /v1/journal/entries
+    list_response = test_client.get("/v1/journal/entries")
+    assert list_response.status_code == 200
+    assert list_response.json()["total"] >= 1
+    assert any(item["title"] == "Gà bỏ ăn" for item in list_response.json()["items"])
+
+
 
 def test_chat_message_returns_grounded_citation_for_matching_knowledge(client):
     test_client, _, _ = client

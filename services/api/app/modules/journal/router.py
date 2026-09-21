@@ -6,10 +6,24 @@ from sqlalchemy.orm import Session
 from services.api.app.core.auth import UserPrincipal, get_current_user
 from services.api.app.core.db import get_session
 from services.api.app.core.idempotency import execute_idempotent, require_idempotency_key
-from services.api.app.modules.journal.schemas import CreateJournalEntryRequest, JournalEntryResponse
-from services.api.app.modules.journal.service import create_journal_entry
+from services.api.app.modules.journal.schemas import CreateJournalEntryRequest, JournalEntryResponse, JournalListResponse
+from services.api.app.modules.journal.service import create_journal_entry, list_journal_entries
 
 router = APIRouter(prefix="/v1/journal", tags=["journal"])
+
+
+@router.get("/entries", response_model=JournalListResponse)
+def list_entries(
+    subject_id: str | None = None,
+    since: str | None = None,
+    limit: int = 50,
+    user: UserPrincipal = Depends(get_current_user),
+    session: Session = Depends(get_session),
+) -> JournalListResponse:
+    entries = list_journal_entries(session, user.user_id, subject_id=subject_id, since=since, limit=limit)
+    items = [JournalEntryResponse.model_validate(e) for e in entries]
+    return JournalListResponse(items=items, total=len(items))
+
 
 
 @router.post("/entries", response_model=JournalEntryResponse, status_code=201)

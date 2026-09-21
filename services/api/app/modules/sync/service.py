@@ -21,6 +21,23 @@ def apply_event(session: Session, user_id: str, event: SyncEventRequest) -> Sync
             return SyncResult(event_id=event.event_id, status="duplicate", entity_id=existing.entity_id)
         return SyncResult(event_id=event.event_id, status="conflict", entity_id=existing.entity_id)
 
+    entity_id: str | None = None
+    if event.entity == "journal_entry" and event.operation == "upsert":
+        try:
+            from services.api.app.modules.journal.schemas import CreateJournalEntryRequest
+            from services.api.app.modules.journal.service import create_journal_entry
+
+            req = CreateJournalEntryRequest.model_validate(
+                {
+                    "client_event_id": event.event_id,
+                    **event.payload,
+                }
+            )
+            entry = create_journal_entry(session, user_id, req)
+            entity_id = entry.id
+        except Exception:
+            pass
+
     sync_event = SyncEvent(
         user_id=user_id,
         event_id=event.event_id,
@@ -29,7 +46,9 @@ def apply_event(session: Session, user_id: str, event: SyncEventRequest) -> Sync
         payload=event.payload,
         payload_hash=digest,
         status="applied",
+        entity_id=entity_id,
     )
     session.add(sync_event)
     session.flush()
     return SyncResult(event_id=event.event_id, status="applied", entity_id=sync_event.entity_id)
+

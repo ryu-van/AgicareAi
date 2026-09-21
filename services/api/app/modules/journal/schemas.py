@@ -26,3 +26,9 @@ class JournalEntryResponse(CreateJournalEntryRequest):
 
     id: str
     created_at: datetime
+
+
+class JournalListResponse(BaseModel):
+    items: list[JournalEntryResponse]
+    total: int
+

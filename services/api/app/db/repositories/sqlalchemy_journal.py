@@ -28,3 +28,28 @@ class SqlAlchemyJournalRepository:
         session.add(entry)
         session.flush()
         return entry
+
+    def list_journal_entries(
+        self,
+        session: Session,
+        user_id: str,
+        subject_id: str | None = None,
+        since: str | None = None,
+        limit: int = 50,
+    ) -> list[JournalEntry]:
+        stmt = select(JournalEntry).where(
+            JournalEntry.user_id == user_id,
+            JournalEntry.deleted_at.is_(None),
+        )
+        if subject_id:
+            stmt = stmt.where(JournalEntry.subject_id == subject_id)
+        if since:
+            try:
+                from datetime import datetime
+                since_dt = datetime.fromisoformat(since)
+                stmt = stmt.where(JournalEntry.updated_at > since_dt)
+            except Exception:
+                pass
+        stmt = stmt.order_by(JournalEntry.observed_at.desc()).limit(limit)
+        return list(session.scalars(stmt).all())
+

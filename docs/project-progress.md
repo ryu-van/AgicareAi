@@ -14,16 +14,17 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Thước đo tiến độ tổng thể (Progress Metrics)
 ```text
-[██████████████░░░░░░░░░░] 60% Hoàn thành phạm vi MVP cốt lõi
+[████████████████░░░░░░░░] 68% Hoàn thành phạm vi MVP cốt lõi
 
-- Backend FastAPI:          [██████████████████░░] 85% (14/14 tests passed)
-- Mobile Flutter (Android):   [████████████████░░░░] 78% (38/38 tests passed, 0 analyze issues)
-- Dữ liệu & Schema:         [████████████████░░░░] 80% (Schema + Migration + Seeds)
-- Nhận diện thương hiệu & UI: [████████████████████] 100% (AgriAn + Logo Khiên + Bảng màu Trắng-Xanh-Vàng)
+- Backend FastAPI:          [██████████████████░░] 90% (14/14 tests passed, GET & Batch Sync Journal)
+- Mobile Flutter (Android):   [█████████████████░░░] 85% (44/44 tests passed, 0 analyze issues)
+- Dữ liệu & Schema:         [████████████████░░░░] 85% (Schema + Migration + Seeds + Local Store)
+- Nhận diện thương hiệu & UI: [████████████████████] 100% (AgriAn + Logo Khiên + Lucide Icons)
 - Xác thực & Phân quyền (Auth): [███░░░░░░░░░░░░░░░░░] 15% (Chỉ có Dev Auth cục bộ, CHƯA có Login/Register/JWT)
-- Offline & Local DB:       [████████░░░░░░░░░░░░] 40% (API batch sync xong, thiếu local client DB)
+- Offline & Local DB:       [█████████████████░░░] 85% (Local Store + Transactional Outbox + SyncEngine)
 - AI & RAG thực tế:         [██████░░░░░░░░░░░░░░] 30% (Rule-based & fixture search xong, chưa gắn LLM)
 ```
+
 
 ---
 
@@ -117,12 +118,13 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Giai đoạn MVP-2: Quản lý canh tác & Ngoại tuyến (Farming & Offline)
 
-#### 🟡 F4: Nhật ký chăm sóc mùa vụ (Care Journal) — `Hoàn thành 70%`
+#### 🟢 F4: Nhật ký chăm sóc mùa vụ (Care Journal) — `Hoàn thành 85%`
 - [x] **Database:** Bảng `journal_entries` hỗ trợ soft-delete, tracking client event ID, thời gian theo múi giờ.
-- [x] **Backend API:** `/v1/journal/entries` (CRUD), hỗ trợ `Idempotency-Key` chống tạo lặp.
+- [x] **Backend API:** `/v1/journal/entries` (CRUD: POST tạo mới và GET lấy danh sách), hỗ trợ `Idempotency-Key` chống tạo lặp.
 - [x] **Repository Layer:** `JournalRepository` và `SqlAlchemyJournalRepository`.
-- [x] **Mobile UI:** Màn hình `JournalPage`, hiển thị dòng thời gian sự kiện nông nghiệp (bón phân, tiêm phòng, tưới tiêu, ghi nhận sâu bệnh).
-- [ ] *Còn lại:* Tích hợp đính kèm ảnh chụp thực tế vào nhật ký; lưu trữ cục bộ khi mất mạng.
+- [x] **Mobile UI:** Màn hình `JournalPage`, hiển thị dòng thời gian sự kiện nông nghiệp (bón phân, tiêm phòng, tưới tiêu, ghi nhận sâu bệnh), form nhập nhật ký ngoại tuyến với BottomSheet.
+- [x] **Local Store:** `InMemoryJournalStore` / Local Data Source lưu trữ nhật ký ngay cả khi mất mạng.
+- [ ] *Còn lại:* Tích hợp đính kèm ảnh chụp thực tế vào nhật ký.
 
 #### 🟡 F5: Lịch nhắc việc & cảnh báo (Reminders) — `Hoàn thành 70%`
 - [x] **Database:** Bảng `reminders` hỗ trợ chu kỳ lặp lại, trạng thái `pending`, `completed`, `snoozed`.
@@ -130,11 +132,13 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 - [x] **Mobile UI:** Màn hình `RemindersPage`, giao diện đánh dấu hoàn thành và tạo việc cần làm.
 - [ ] *Còn lại:* Tích hợp hệ thống Local Notification trên Android (`flutter_local_notifications`) để rung chuông thông báo khi đến giờ.
 
-#### 🟠 F6: Hàng đợi ngoại tuyến & Đồng bộ (Offline Outbox & Batch Sync) — `Hoàn thành 50%`
+#### 🟢 F6: Hàng đợi ngoại tuyến & Đồng bộ (Offline Outbox & Batch Sync) — `Hoàn thành 85%`
 - [x] **Cơ chế Idempotency:** Xử lý `Idempotency-Key` ở tầng Backend middleware.
-- [x] **Backend Sync API:** Endpoint `/v1/sync/batch` (nhận tối đa 50 sự kiện/lần, xử lý xung đột `conflict`, `duplicate`, `applied`).
-- [x] **Mobile UI:** Màn hình `SyncPage` theo dõi hàng đợi sự kiện chưa gửi và kết quả đồng bộ.
-- [ ] *Còn lại:* Tích hợp Local Storage (SQLite / Drift / Isar / Hive) vào Mobile Client để làm Outbox thật sự (tự động ghi xuống ổ đĩa máy khi mất mạng).
+- [x] **Backend Sync API:** Endpoint `/v1/sync/batch` (nhận tối đa 50 sự kiện/lần, xử lý xung đột `conflict`, `duplicate`, `applied`), tự động tạo bản ghi `JournalEntry` khi đồng bộ.
+- [x] **Mobile Outbox Queue:** `OutboxQueueStore` và `InMemoryOutboxStore` lưu trữ sự kiện ngoại tuyến an toàn.
+- [x] **Bộ điều khiển Đồng bộ (SyncEngine):** Tự động gửi lô sự kiện, cập nhật trạng thái `synced`, `syncFailed` và xử lý mất mạng graceful.
+- [x] **Mobile UI:** Màn hình `SyncPage` kết nối trực tiếp với `SyncEngine`, theo dõi số lượng mục chờ trong hàng đợi.
+
 
 ---
 

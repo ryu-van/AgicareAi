@@ -188,16 +188,58 @@ class ApiClient {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getJournalEntries({
+    String? subjectId,
+    String? since,
+  }) async {
+    final params = <String>[];
+    if (subjectId != null) {
+      params.add('subject_id=${Uri.encodeQueryComponent(subjectId)}');
+    }
+    if (since != null) {
+      params.add('since=${Uri.encodeQueryComponent(since)}');
+    }
+    final query = params.isEmpty ? '' : '?${params.join('&')}';
+    final body = await _get('/v1/journal/entries$query') as Map<String, dynamic>;
+    return (body['items'] as List<dynamic>? ?? const [])
+        .map((item) => item as Map<String, dynamic>)
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> createJournalEntry(
+    Map<String, dynamic> payload, {
+    String? idempotencyKey,
+  }) async {
+    return _post(
+      '/v1/journal/entries',
+      payload,
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
+  Future<Map<String, dynamic>> syncBatch(
+    List<Map<String, dynamic>> events, {
+    String? idempotencyKey,
+  }) async {
+    return _post(
+      '/v1/sync/batch',
+      {'events': events},
+      idempotencyKey: idempotencyKey,
+    );
+  }
+
   Future<Map<String, dynamic>> _post(
     String path,
-    Map<String, dynamic> payload,
-  ) async {
+    Map<String, dynamic> payload, {
+    String? idempotencyKey,
+  }) async {
     final response = await _client
         .post(
           Uri.parse('$_baseUrl$path'),
           headers: {
             ..._headers,
             'Idempotency-Key':
+                idempotencyKey ??
                 'flutter-${DateTime.now().microsecondsSinceEpoch}',
           },
           body: jsonEncode(payload),
@@ -209,6 +251,7 @@ class ApiClient {
     }
     return body as Map<String, dynamic>;
   }
+
 
   Future<Map<String, dynamic>> _patch(
     String path,
