@@ -37,6 +37,25 @@ def apply_event(session: Session, user_id: str, event: SyncEventRequest) -> Sync
             entity_id = entry.id
         except Exception:
             pass
+    elif event.entity == "journal_entry" and event.operation == "delete":
+        try:
+            from services.api.app.modules.journal.service import delete_journal_entry
+            target_id = event.payload.get("entry_id")
+            if not target_id and event.payload.get("client_event_id"):
+                from services.api.app.db.models import JournalEntry
+                found = session.scalar(
+                    select(JournalEntry).where(
+                        JournalEntry.user_id == user_id,
+                        JournalEntry.client_event_id == event.payload["client_event_id"],
+                    )
+                )
+                if found:
+                    target_id = found.id
+            if target_id:
+                delete_journal_entry(session, user_id, target_id)
+                entity_id = target_id
+        except Exception:
+            pass
 
     sync_event = SyncEvent(
         user_id=user_id,

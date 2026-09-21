@@ -21,6 +21,7 @@ class JournalEntryEntity {
     required this.entryType,
     required this.title,
     this.notes,
+    this.photoPath,
     required this.observedAt,
     this.timezone = 'Asia/Ho_Chi_Minh',
     this.syncStatus = SyncStatus.pendingSync,
@@ -38,6 +39,7 @@ class JournalEntryEntity {
   final String entryType; // observation, treatment, harvest, vaccination, feeding
   final String title;
   final String? notes;
+  final String? photoPath;
   final DateTime observedAt;
   final String timezone;
   final SyncStatus syncStatus;
@@ -55,6 +57,7 @@ class JournalEntryEntity {
     'entry_type': entryType,
     'title': title,
     'notes': notes,
+    'photo_path': photoPath,
     'observed_at': observedAt.toIso8601String(),
     'timezone': timezone,
     'sync_status': syncStatus.name,
@@ -73,6 +76,7 @@ class JournalEntryEntity {
     entryType: map['entry_type'] as String,
     title: map['title'] as String,
     notes: map['notes'] as String?,
+    photoPath: map['photo_path'] as String?,
     observedAt: DateTime.parse(map['observed_at'] as String),
     timezone: map['timezone'] as String? ?? 'Asia/Ho_Chi_Minh',
     syncStatus: SyncStatus.values.firstWhere(
@@ -88,6 +92,12 @@ class JournalEntryEntity {
 
   JournalEntryEntity copyWith({
     String? serverId,
+    String? title,
+    String? entryType,
+    String? subjectId,
+    String? notes,
+    String? photoPath,
+    DateTime? observedAt,
     SyncStatus? syncStatus,
     String? syncError,
     bool? isDraft,
@@ -98,11 +108,12 @@ class JournalEntryEntity {
       localId: localId,
       serverId: serverId ?? this.serverId,
       clientEventId: clientEventId,
-      subjectId: subjectId,
-      entryType: entryType,
-      title: title,
-      notes: notes,
-      observedAt: observedAt,
+      subjectId: subjectId ?? this.subjectId,
+      entryType: entryType ?? this.entryType,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      photoPath: photoPath ?? this.photoPath,
+      observedAt: observedAt ?? this.observedAt,
       timezone: timezone,
       syncStatus: syncStatus ?? this.syncStatus,
       syncError: syncError ?? this.syncError,

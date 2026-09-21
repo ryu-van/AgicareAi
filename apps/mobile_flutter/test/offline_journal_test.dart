@@ -187,5 +187,49 @@ void main() {
       expect(localEntry, isNotNull);
       expect(localEntry!.title, 'Tiêm phòng dịch tả lợn');
     });
+
+    test('JournalRepository supports photo attachment, editEntry, and deleteEntry lifecycle', () async {
+      final mockClient = MockClient((request) async => http.Response('{}', 200));
+      final apiClient = ApiClient(client: mockClient, baseUrl: 'http://test');
+      final repository = ApiJournalRepository(
+        apiClient: apiClient,
+        localStore: localStore,
+        outboxStore: outboxStore,
+      );
+
+      // 1. Create with photoPath
+      final created = await repository.createEntry(
+        title: 'Bón phân đợt 2',
+        entryType: 'treatment',
+        subjectId: 'rice',
+        notes: 'Bón đạm và kali',
+        photoPath: 'file:///data/photos/crop_field_01.jpg',
+      );
+      expect(created.photoPath, 'file:///data/photos/crop_field_01.jpg');
+
+      final list1 = await repository.fetchJournalEntries();
+      expect(list1.first['photo_path'], 'file:///data/photos/crop_field_01.jpg');
+
+      // 2. Edit entry
+      final edited = await repository.editEntry(
+        localId: created.localId,
+        title: 'Bón phân đợt 2 - Đã hoàn thành',
+        notes: 'Liều lượng 50kg/ha, thời tiết nắng ráo',
+      );
+      expect(edited, isNotNull);
+      expect(edited!.title, 'Bón phân đợt 2 - Đã hoàn thành');
+      expect(edited.notes, 'Liều lượng 50kg/ha, thời tiết nắng ráo');
+      expect(edited.photoPath, 'file:///data/photos/crop_field_01.jpg');
+
+      final list2 = await repository.fetchJournalEntries();
+      expect(list2.first['title'], 'Bón phân đợt 2 - Đã hoàn thành');
+
+      // 3. Delete entry
+      final deleted = await repository.deleteEntry(created.localId);
+      expect(deleted, isTrue);
+
+      final listAfterDelete = await repository.fetchJournalEntries();
+      expect(listAfterDelete.isEmpty, isTrue);
+    });
   });
 }

@@ -293,6 +293,106 @@ def test_journal_idempotency_and_sync_conflict(client):
     assert any(item["title"] == "Gà bỏ ăn" for item in list_response.json()["items"])
 
 
+def test_journal_crud_lifecycle_and_sync_delete(client):
+    test_client, _, _ = client
+    # 1. Create entry with photo_url
+    create_res = test_client.post(
+        "/v1/journal/entries",
+        headers={"Idempotency-Key": "journal-crud-key-01"},
+        json={
+            "subject_id": "chicken",
+            "entry_type": "treatment",
+            "observed_at": datetime.now(timezone.utc).isoformat(),
+            "timezone": "Asia/Ho_Chi_Minh",
+            "title": "Tiêm vắc xin Newcastle",
+            "notes": "Đợt 1 cho 500 con gà",
+            "photo_url": "file:///storage/photos/farm_001.jpg",
+            "client_event_id": "journal-client-event-crud-1",
+        },
+    )
+    assert create_res.status_code == 201
+    entry_id = create_res.json()["id"]
+    assert create_res.json()["photo_url"] == "file:///storage/photos/farm_001.jpg"
+
+    # 2. GET by ID
+    get_res = test_client.get(f"/v1/journal/entries/{entry_id}")
+    assert get_res.status_code == 200
+    assert get_res.json()["id"] == entry_id
+    assert get_res.json()["title"] == "Tiêm vắc xin Newcastle"
+
+    # 3. PATCH update
+    patch_res = test_client.patch(
+        f"/v1/journal/entries/{entry_id}",
+        headers={"Idempotency-Key": "journal-crud-patch-01"},
+        json={"title": "Đã tiêm vắc xin Newcastle xong", "notes": "Gà khỏe, không có phản ứng phụ"},
+    )
+    assert patch_res.status_code == 200
+    assert patch_res.json()["title"] == "Đã tiêm vắc xin Newcastle xong"
+    assert patch_res.json()["notes"] == "Gà khỏe, không có phản ứng phụ"
+
+    # 4. DELETE soft-delete
+    del_res = test_client.delete(f"/v1/journal/entries/{entry_id}")
+    assert del_res.status_code == 204
+
+    # 5. Verify it is no longer returned in GET by ID or list
+    get_after = test_client.get(f"/v1/journal/entries/{entry_id}")
+    assert get_after.status_code == 404
+
+    list_after = test_client.get("/v1/journal/entries")
+    assert all(item["id"] != entry_id for item in list_after.json()["items"])
+
+    # 6. Test sync delete operation
+    sync_create = test_client.post(
+        "/v1/sync/batch",
+        headers={"Idempotency-Key": "sync-create-batch-key-01"},
+        json={
+            "events": [
+                {
+                    "event_id": "sync-journal-del-evt-1",
+                    "entity": "journal_entry",
+                    "operation": "upsert",
+                    "payload": {
+                        "subject_id": "chicken",
+                        "entry_type": "feeding",
+                        "observed_at": datetime.now(timezone.utc).isoformat(),
+                        "timezone": "Asia/Ho_Chi_Minh",
+                        "title": "Cho ăn cám đợt sáng",
+                        "client_event_id": "sync-journal-del-evt-1",
+                    },
+                }
+            ]
+        },
+    )
+    assert sync_create.status_code == 200
+    created_id = sync_create.json()["results"][0]["entity_id"]
+    assert created_id is not None
+
+    # Now delete via sync batch operation: delete
+    sync_delete = test_client.post(
+        "/v1/sync/batch",
+        headers={"Idempotency-Key": "sync-delete-batch-key-01"},
+        json={
+            "events": [
+                {
+                    "event_id": "sync-journal-del-evt-2",
+                    "entity": "journal_entry",
+                    "operation": "delete",
+                    "payload": {
+                        "entry_id": created_id,
+                        "client_event_id": "sync-journal-del-evt-1",
+                    },
+                }
+            ]
+        },
+    )
+    assert sync_delete.status_code == 200
+    assert sync_delete.json()["results"][0]["status"] == "applied"
+
+    # Verify created_id is soft-deleted
+    verify_del = test_client.get(f"/v1/journal/entries/{created_id}")
+    assert verify_del.status_code == 404
+
+
 
 def test_chat_message_returns_grounded_citation_for_matching_knowledge(client):
     test_client, _, _ = client

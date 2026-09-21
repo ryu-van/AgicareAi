@@ -14,14 +14,15 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Thước đo tiến độ tổng thể (Progress Metrics)
 ```text
-[█████████████████░░░░░░░] 75% Hoàn thành phạm vi MVP cốt lõi
+[██████████████████░░░░░░] 78% Hoàn thành phạm vi MVP cốt lõi
 
-- Backend FastAPI:          [███████████████████░] 95% (20/20 tests passed, Gemini API & 5-tier Guardrails)
-- Mobile Flutter (Android):   [█████████████████░░░] 85% (44/44 tests passed, 0 analyze issues)
-- Dữ liệu & Schema:         [████████████████░░░░] 85% (Schema + Migration + Seeds + Local Store)
+- Backend FastAPI:          [███████████████████░] 96% (21/21 tests passed, Full Journal CRUD + Sync Delete)
+- Mobile Flutter (Android):   [██████████████████░░] 90% (48/48 tests passed, 0 analyze issues, 100% Care Journal)
+- Dữ liệu & Schema:         [██████████████████░░] 90% (Schema + Migration + Seeds + Local Store + Photos)
 - Nhận diện thương hiệu & UI: [████████████████████] 100% (AgriAn + Logo Khiên + Lucide Icons)
 - Xác thực & Phân quyền (Auth): [███░░░░░░░░░░░░░░░░░] 15% (Chỉ có Dev Auth cục bộ, CHƯA có Login/Register/JWT)
-- Offline & Local DB:       [█████████████████░░░] 85% (Local Store + Transactional Outbox + SyncEngine)
+- Offline & Local DB:       [█████████████████░░░] 88% (Local Store + Transactional Outbox + SyncEngine)
+- F4 Nhật ký mùa vụ:       [████████████████████] 100% (Full CRUD, bộ lọc, xem chi tiết, ảnh thực địa, offline sync)
 - AI & RAG thực tế:         [████████████████░░░░] 80% (Gemini 1.5 Flash Adapter + Pre/Post Guardrails + Grounding)
 ```
 
@@ -121,13 +122,14 @@ AgriAn (trước đây là AgriCare AI) là ứng dụng di động hỗ trợ t
 
 ### Giai đoạn MVP-2: Quản lý canh tác & Ngoại tuyến (Farming & Offline)
 
-#### 🟢 F4: Nhật ký chăm sóc mùa vụ (Care Journal) — `Hoàn thành 85%`
-- [x] **Database:** Bảng `journal_entries` hỗ trợ soft-delete, tracking client event ID, thời gian theo múi giờ.
-- [x] **Backend API:** `/v1/journal/entries` (CRUD: POST tạo mới và GET lấy danh sách), hỗ trợ `Idempotency-Key` chống tạo lặp.
-- [x] **Repository Layer:** `JournalRepository` và `SqlAlchemyJournalRepository`.
-- [x] **Mobile UI:** Màn hình `JournalPage`, hiển thị dòng thời gian sự kiện nông nghiệp (bón phân, tiêm phòng, tưới tiêu, ghi nhận sâu bệnh), form nhập nhật ký ngoại tuyến với BottomSheet.
-- [x] **Local Store:** `InMemoryJournalStore` / Local Data Source lưu trữ nhật ký ngay cả khi mất mạng.
-- [ ] *Còn lại:* Tích hợp đính kèm ảnh chụp thực tế vào nhật ký.
+#### 🟢 F4: Nhật ký chăm sóc mùa vụ (Care Journal) — `Hoàn thành 100%`
+- [x] **Database:** Bảng `journal_entries` hỗ trợ soft-delete, tracking client event ID, lưu `photo_url` ảnh thực địa, thời gian theo múi giờ.
+- [x] **Backend API:** Full REST CRUD `/v1/journal/entries` (POST tạo mới, GET danh sách, GET chi tiết theo ID, PATCH cập nhật, DELETE xóa mềm), hỗ trợ `Idempotency-Key` và batch sync delete.
+- [x] **Repository Layer:** `JournalRepository` và `SqlAlchemyJournalRepository` hỗ trợ trọn vẹn CRUD & sync.
+- [x] **Mobile UI:** Màn hình `JournalPage` hoàn chỉnh: bộ lọc theo cây trồng/vật nuôi và loại hoạt động, xem chi tiết trong BottomSheet, form tạo & chỉnh sửa hỗ trợ đính kèm ảnh thực tế, hộp thoại xác nhận xóa an toàn, nút đồng bộ nhanh tại banner.
+- [x] **Local Store & Outbox:** `InMemoryJournalStore` và `OutboxQueueStore` lưu trữ ngoại tuyến tức thì (<5ms) với monotonic counter chống xung đột ID, tự động xếp hàng vào outbox để gửi server khi có mạng.
+- [x] **Đính kèm ảnh minh chứng:** Hỗ trợ lưu trữ đường dẫn ảnh thực địa, hiển thị biểu tượng máy ảnh trên danh sách và xem ảnh chi tiết trong modal.
+- [x] **Kiểm thử toàn diện:** 21/21 backend tests passed, 48/48 mobile tests passed (bao gồm unit & widget tests cho create, filter, detail, edit, delete).
 
 #### 🟡 F5: Lịch nhắc việc & cảnh báo (Reminders) — `Hoàn thành 70%`
 - [x] **Database:** Bảng `reminders` hỗ trợ chu kỳ lặp lại, trạng thái `pending`, `completed`, `snoozed`.

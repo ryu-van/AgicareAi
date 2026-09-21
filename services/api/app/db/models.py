@@ -151,6 +151,7 @@ class JournalEntry(Base):
     timezone: Mapped[str] = mapped_column(String(64), nullable=False, default="Asia/Ho_Chi_Minh")
     title: Mapped[str] = mapped_column(String(160), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
+    photo_url: Mapped[str | None] = mapped_column(String(512))
     client_event_id: Mapped[str | None] = mapped_column(String(128))
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=now_utc)
